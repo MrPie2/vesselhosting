@@ -11,14 +11,14 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('domains', function (Blueprint $table) {
-    $table->string('id');
-    $table->string('user_id');
-        $table->string('domain');
-
-    $table->timestamps();
-
-});
+         Schema::create('hostings', function (Blueprint $table) {
+            $table->id();
+            $table->string('user_id');
+            $table->string('plan_id');
+            $table->string('plan_name');
+            $table->string('bandwidth');
+            $table->timestamps();
+        });
     }
 
     /**
@@ -26,6 +26,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        
+        //
     }
 };

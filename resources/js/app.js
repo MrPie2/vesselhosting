@@ -1,5 +1,26 @@
 import 'bootstrap';
-import 'bootstrap-icons/font/bootstrap-icons.css';
+import $ from 'jquery';
+
+window.$ = window.jQuery= $;
+
+$.ajaxSetup({
+    headers: {
+    'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+    }
+})
+
+$('#domain-search-form').on('submit', function(e) {
+    e.preventDefault();
+    var domain_text=$('.domain-text').val();
+    $.ajax({
+        url:'/domain-s',
+        method:"POST",
+        data:{domain_text:domain_text},
+        success:function(response){
+            $('.search-results').html(response.message).addClass('alert alert-success');
+        }
+    })
+})
 
 document.addEventListener('DOMContentLoaded', () => {
     document.querySelectorAll('[data-password-toggle]').forEach(button => {

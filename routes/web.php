@@ -9,6 +9,10 @@ use App\Http\Controllers\HostingController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\AdminController;
+use App\Http\Controllers\ProductController;
+use App\Http\Controllers\SearchController;
+use App\Http\Controllers\PlanController;
+
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', fn()=>view('landing'))->name('home');
@@ -21,6 +25,14 @@ Route::middleware('guest')->group(function(){
     Route::post('/register',[AuthController::class,'register'])->name('register.store');
 });
 Route::post('/logout',[AuthController::class,'logout'])->middleware('auth')->name('logout');
+
+Route::get('/regiter-domain', function(){
+    return view('domain-register');
+});
+
+Route::post('/domain-s', [SearchController::class, 'search_domain'])->name('dashboard.domain-s');
+Route::get('/dashboard/products/index', [PlanController::class, 'index'])->name('dashboard.products');
+Route::get('/dashboard/products/single-product/{id}', [PlanController::class, 'single_prod'])->name('dashboard.single-product');
 
 Route::middleware('auth')->prefix('checkout')->name('checkout.')->group(function(){
     Route::get('/domain',[CheckoutController::class,'domain'])->name('domain');

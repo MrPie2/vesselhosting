@@ -11,14 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('domains', function (Blueprint $table) {
-    $table->string('id');
-    $table->string('user_id');
-        $table->string('domain');
-
-    $table->timestamps();
-
-});
+        Schema::create('orders', function(Blueprint $table){
+            $table->string('id');
+            $table->string('user_id');
+            $table->timestamps();
+    });
     }
 
     /**
@@ -26,6 +23,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        
+        //
     }
 };

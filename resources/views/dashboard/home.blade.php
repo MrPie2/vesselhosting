@@ -1,5 +1,3 @@
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>
 @extends('layouts.dashboard')
 @section('content')
 <div class="mb-4"><h2 class="fw-bold mb-1">Good morning, {{ Str::before($user->name,' ') }} 👋</h2><p class="text-secondary mb-0">Here’s what’s happening with your web services.</p></div>
@@ -10,7 +8,13 @@
 </div>
 <div class="row g-4">
 <div class="col-xl-7"><div class="table-card"><div class="p-4 border-bottom d-flex justify-content-between"><h5 class="fw-bold mb-0">Your domains</h5><a class="text-vh fw-semibold" href="{{ route('dashboard.domains') }}">View all</a></div>
-@forelse($domains->take(5) as $domain)<div class="p-3 px-4 d-flex justify-content-between align-items-center border-bottom"><div><div class="fw-semibold">{{ $domain->name }}</div><div class="small text-secondary">{{ $domain->expiry_date ? 'Expires '.$domain->expiry_date->format('M d, Y') : 'No expiry date' }}</div></div><a class="btn btn-sm btn-outline-dark rounded-3" href="{{ route('dashboard.domains.show',$domain) }}">Manage</a></div>@empty<div class="p-4 text-secondary">No domains yet.</div>@endforelse
+@forelse($domains->take(5) as $domain)
+<div class="p-3 px-4 d-flex justify-content-between align-items-center border-bottom"><div>
+    <div class="fw-semibold">{{ $domain->domain }}</div>
+    <div class="small text-secondary">{{ $domain->expiry_date ? 'Expires '.$domain->expiry_date->format('M d, Y') : 'No expiry date' }}</div>
+</div><a class="btn btn-sm btn-outline-dark rounded-3" href="{{ route('dashboard.domains.show',$domain) }}">Manage</a></div>
+@empty<div class="p-4 text-secondary">No domains yet.</div>
+@endforelse
 </div></div>
 <div class="col-xl-5"><div class="bg-vh text-white rounded-4 p-4 h-100"><div class="small opacity-75">NEED A WEBSITE?</div><h4 class="fw-bold mt-2">Launch hosting in minutes.</h4><p class="opacity-75">Connect a domain, provision cPanel and manage DNS without leaving your account.</p><a class="btn btn-light rounded-3 fw-semibold" href="{{ route('dashboard.hosting') }}">View hosting</a></div></div>
 </div>

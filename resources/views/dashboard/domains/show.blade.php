@@ -1,8 +1,13 @@
 @extends('layouts.dashboard')
 @section('content')
 <div class="d-flex justify-content-between align-items-start flex-wrap gap-3 mb-4">
-<div><a class="small text-vh" href="{{ route('dashboard.domains') }}">← Domains</a><h2 class="fw-bold mt-2">{{ $domain->name }}</h2><div class="text-secondary small">{{ ucfirst(str_replace('_',' ',$domain->status)) }} · Expires {{ $domain->expiry_date?->format('M d, Y') ?: 'pending' }}</div></div>
-<div class="d-flex gap-2"><button class="btn btn-outline-dark" data-bs-toggle="modal" data-bs-target="#renew">Renew</button><span class="badge badge-soft align-self-center">{{ $domain->hosting ? 'Hosting attached' : 'Domain only' }}</span></div>
+<div><a class="small text-vh" href="{{ route('dashboard.domains') }}">← Domains</a><h2 class="fw-bold mt-2">{{ $domain->name }}</h2>
+<div class="text-secondary small">{{ ucfirst(str_replace('_',' ',$domain->status)) }} · Expires {{ $domain->expiry_date?->format('M d, Y') ?: 'pending' }}</div>
+</div>
+<div class="d-flex gap-2">
+    <button class="btn btn-outline-dark" data-bs-toggle="modal" data-bs-target="#renew">Renew</button>
+    <span class="badge badge-soft align-self-center">{{ $domain->hosting ? 'Hosting attached' : 'Domain only' }}</span>
+</div>
 </div>
 <div class="row g-4">
 <div class="col-lg-8"><div class="table-card p-4"><div class="d-flex justify-content-between mb-3"><div><h5 class="fw-bold mb-1">DNS records</h5><div class="small text-secondary">DNS is available even when this domain has no hosting account.</div></div></div>
