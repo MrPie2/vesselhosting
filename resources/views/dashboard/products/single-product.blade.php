@@ -45,7 +45,7 @@
                         </div>
 
                         <strong>
-                            ${{ number_format($plan->monthly_price, 2) }}
+                            ${{ number_format($plan->amount, 2) * 1 }}
                         </strong>
                     </label>
 
@@ -59,7 +59,7 @@
                         </div>
 
                         <strong>
-                            ${{ number_format($plan->semi_annual_price, 2) }}
+                            ${{ number_format($plan->amount, 2) * 6 }}
                         </strong>
                     </label>
 
@@ -73,7 +73,7 @@
                         </div>
 
                         <strong>
-                            ${{ number_format($plan->annual_price, 2) }}
+                            ${{ number_format($plan->amount, 2) * 12 }}
                         </strong>
                     </label>
 
@@ -87,17 +87,13 @@
                         </div>
 
                         <strong>
-                            ${{ number_format($plan->biennial_price, 2) }}
+                            ${{ number_format($plan->amount, 2) * 24 }}
                         </strong>
                     </label>
 
                 </div>
 
-                <button class="btn btn-dark w-100 mt-4">
-                    Continue
-                </button>
-
-            </div>
+                            </div>
         </div>
 
         <div class="mt-4">
@@ -182,6 +178,15 @@
     </label>
 
 </div>
+
+</div>
+<br>
+<div class="mb-3">
+    <label class="small text-muted">Account Domain name</label>
+    <input type="text" placeholder="Domain name" class="form-control">
+</div>
+<div class="mb-3">
+    <button class="btn btn-dark w-100 mt-4">Continue</button>
 
 </div>
 
