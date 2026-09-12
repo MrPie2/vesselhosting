@@ -1,0 +1,4 @@
+@extends('layouts.dashboard')
+@section('content')
+<h2 class="fw-bold mb-4">Hosting accounts</h2><div class="table-card table-responsive"><table class="table align-middle mb-0"><thead><tr><th class="px-4">Domain</th><th>Customer</th><th>Plan</th><th>Status</th><th>Provisioning</th></tr></thead><tbody>@foreach($hosting as $account)<tr><td class="px-4">{{ $account->domain?->name ?: 'No domain linked' }}</td><td>{{ $account->user->email }}</td><td>{{ $account->plan->name }}</td><td>{{ $account->status }}</td><td>{{ $account->provisioning_status }}</td></tr>@endforeach</tbody></table></div>
+@endsection
