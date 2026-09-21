@@ -12,20 +12,14 @@ use App\Http\Controllers\AdminController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\SearchController;
 use App\Http\Controllers\PlanController;
-<<<<<<< HEAD
 use App\Http\Controllers\ResellerClubController;
-=======
 use App\Http\Controllers\CreateAccountController;
->>>>>>> origin/main
 
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', fn()=>view('landing'))->name('home');
 Route::post('/domain-search',[DomainSearchController::class,'search'])->name('domain.search');
-<<<<<<< HEAD
 Route::get('/domain-av',[ResellerClubController::class,'check'])->name('domain.av');
-=======
->>>>>>> origin/main
 
 Route::middleware('guest')->group(function(){
     Route::get('/login',[AuthController::class,'showLogin'])->name('login');
@@ -42,10 +36,7 @@ Route::get('/regiter-domain', function(){
 Route::post('/domain-s', [SearchController::class, 'search_domain'])->name('dashboard.domain-s');
 Route::get('/dashboard/products/index', [PlanController::class, 'index'])->name('dashboard.products');
 Route::get('/dashboard/products/single-product/{id}', [PlanController::class, 'single_prod'])->name('dashboard.single-product');
-<<<<<<< HEAD
-=======
 Route::post('/create-account', [CreateAccountController::class, 'createhosting'])->name('dashboard.create');
->>>>>>> origin/main
 
 Route::middleware('auth')->prefix('checkout')->name('checkout.')->group(function(){
     Route::get('/domain',[CheckoutController::class,'domain'])->name('domain');

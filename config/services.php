@@ -34,24 +34,17 @@ return [
             'channel' => env('SLACK_BOT_USER_DEFAULT_CHANNEL'),
         ],
     ],
-<<<<<<< HEAD
+
     'resellerclub' => [
         'url' => env('RESELLERCLUB_API_URL'),
         'user_id' => env('RESELLERCLUB_USER_ID'),
         'api_key' => env('RESELLERCLUB_API_KEY'),
     ],
-'whm' => [
-        'whm_hostname' => env('WHM_HOSTNAME'),
-        'whm_username' => env('WHM_USERNAME'),
-        'whm_token' => env('WHM_API_TOKEN'),
-    ],
-=======
-
+    
     'whm' => [
     'hostname' => env('WHM_HOSTNAME'),
     'username' => env('WHM_USERNAME'),
     'token' => env('WHM_API_TOKEN'),
 ],
 
->>>>>>> origin/main
 ];
