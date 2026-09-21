@@ -12,11 +12,13 @@ use App\Http\Controllers\AdminController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\SearchController;
 use App\Http\Controllers\PlanController;
+use App\Http\Controllers\ResellerClubController;
 
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', fn()=>view('landing'))->name('home');
 Route::post('/domain-search',[DomainSearchController::class,'search'])->name('domain.search');
+Route::get('/domain-av',[ResellerClubController::class,'check'])->name('domain.av');
 
 Route::middleware('guest')->group(function(){
     Route::get('/login',[AuthController::class,'showLogin'])->name('login');

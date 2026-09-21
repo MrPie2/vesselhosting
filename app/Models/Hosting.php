@@ -3,7 +3,6 @@
 namespace App\Models;
 use App\Models\Plan;
 use App\Models\Domain;
-
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
@@ -24,6 +23,8 @@ class Hosting extends Model
         return $this->belongsTo(Hosting::class);
     }
 
+
+
     public function plan(): BelongsTo
     {
         return $this->belongsTo(Plan::class, 'plan_id');
@@ -32,5 +33,11 @@ class Hosting extends Model
     public function domain(): BelongsTo
     {
         return $this->belongsTo(Domain::class, 'domain_id');
+    }
+
+    public function withBasicAuth(): BelongsTo
+    {
+                return $this->belongsTo(Hosting::class);
+
     }
 }

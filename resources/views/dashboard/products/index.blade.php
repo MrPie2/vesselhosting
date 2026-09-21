@@ -8,10 +8,10 @@
             </p>
         </div>
     </div>
-<form id="domain-search-form">
+<form id="domain-search-form" method="POST" action="/domain-av">
      @csrf
 <div class="input-group mb-3">
-    <input type="text" class="form-control input-lg domain-text" placeholder="Search"/><button type="submit" class=" btn btn-lg btn-primary">Search <i class="bi bi-search"></i></button>
+    <input type="text" class="form-control input-lg domain-text" placeholder="Search"/><a type="submit" href="/domain-av"class=" btn btn-lg btn-primary">Search <i class="bi bi-search"></i></a>
 </div>
 </form>
 <div class="container-fluid py-4">
