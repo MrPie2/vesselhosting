@@ -8,22 +8,15 @@
             </p>
         </div>
     </div>
-<<<<<<< HEAD
-<form id="domain-search-form" method="POST" action="/domain-av">
-     @csrf
-<div class="input-group mb-3">
-    <input type="text" class="form-control input-lg domain-text" placeholder="Search"/><a type="submit" href="/domain-av"class=" btn btn-lg btn-primary">Search <i class="bi bi-search"></i></a>
-=======
 <form id="domain-search-form">
      @csrf
 <div class="input-group mb-3">
     <input type="text" class="form-control input-lg domain-text" placeholder="Search"/><button type="submit" class=" btn btn-lg btn-primary">Search <i class="bi bi-search"></i></button>
->>>>>>> origin/main
 </div>
 </form>
 <div class="container-fluid py-4">
 
-    {{-- Header --}}
+    
     <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-3">
         <div>
             <h3 class="fw-bold mb-1">Hosting Plans</h3>
@@ -35,18 +28,12 @@
 
 
     <div class="row g-4">
-
         @forelse($hosting_plan as $plan)
-
             <div class="col-12 col-md-6 col-xl-4">
-
                 <div class="card border-0 shadow-sm h-100 rounded-4 overflow-hidden">
-
-                    {{-- Card Header --}}
                     <div class="p-4 border-bottom">
 
                         <div class="d-flex justify-content-between align-items-start">
-
                             <div>
                                 <div class="d-flex align-items-center gap-2 mb-2">
                                     <span class="bg-light rounded-3 p-2">
@@ -72,7 +59,6 @@
                     </div>
 
 
-                    {{-- Price --}}
                     <div class="p-4">
 
                         <div class="mb-4">
@@ -88,7 +74,6 @@
                         </div>
 
 
-                        {{-- Features --}}
                         <div class="mb-4">
 
                             <div class="d-flex align-items-center mb-3">
@@ -129,7 +114,7 @@
                         </div>
 
 
-                        {{-- Action --}}
+                        
                         <a href="/dashboard/products/single-product/{{ $plan->id }}"
                            class="btn btn-dark w-100 py-2 rounded-3 fw-semibold">
 
@@ -147,7 +132,7 @@
 
         @empty
 
-            {{-- Empty State --}}
+            
             <div class="col-12">
 
                 <div class="text-center py-5">
