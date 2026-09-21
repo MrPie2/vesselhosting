@@ -8,10 +8,14 @@
     </div><span class="badge badge-soft">{{ ucfirst($hosting->status) }}</span></div>
     <hr><div class="row small"><div class="col-6 text-secondary">Username</div>
     <div class="col-6 text-end">{{ $hosting->username ?: 'Provisioning…' }}</div>
+<<<<<<< HEAD
     <div class="col-6 text-secondary mt-2">Server</div><div class="col-6 text-end mt-2">
         {{ $hosting->server_hostname ?: 'Pending' }}</div></div>
         <a class="btn btn-vh w-100 mt-4" href="{{ route('dashboard.hosting.show',$hosting) }}">Manage hosting</a>
         <a class="btn btn-secondary w-100 mt-4" target="_blank" href="{{ $loginUrl }}">Login  to CPanel </a></div>
     </div>@empty<div class="col-12"><div class="table-card p-5 text-center text-secondary">No hosting accounts yet.</div>
 </div>@endforelse</div>
+=======
+    <div class="col-6 text-secondary mt-2">Server</div><div class="col-6 text-end mt-2">{{ $hosting->server_hostname ?: 'Pending' }}</div></div><a class="btn btn-vh w-100 mt-4" href="{{ route('dashboard.hosting.show',$hosting) }}">Manage hosting</a></div></div>@empty<div class="col-12"><div class="table-card p-5 text-center text-secondary">No hosting accounts yet.</div></div>@endforelse</div>
+>>>>>>> origin/main
 @endsection

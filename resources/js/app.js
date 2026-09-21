@@ -17,11 +17,46 @@ $('#domain-search-form').on('submit', function(e) {
         method:"POST",
         data:{domain_text:domain_text},
         success:function(response){
+<<<<<<< HEAD
             $('.search-results').html(response.message).addClass('alert alert-success');
+=======
+            $('.search-results').html(response.message);
+>>>>>>> origin/main
         }
     })
 })
 
+<<<<<<< HEAD
+=======
+$('.billing_cycle').click(function(){
+    window.cycle=$(this).val();
+    window.cycle_amount=$(this).attr('amount');
+ $('.cart_amount').html("<h1>$"+(window.cycle_amount)+"</h1>");
+})
+
+
+
+$(document).on('click', '.add_to_cart', function(){
+ let cycle=window.cycle;
+let amount=window.cycle_amount;
+var domain=$('.domain-text').val();
+var plan=$('.plan').attr('cpanel_planid');
+$.ajax({
+url:'/create-account',
+method:'POST',
+data:{cycle:cycle,amount:amount,domain:domain,plan:plan},
+success:function(response){
+$('.cart_amount').html("<h5>" + response.message + "</h5>").addClass('alert alert-success');
+},
+error: function (xhr) {
+        console.log('STATUS:', xhr.status);
+        console.log('RESPONSE:', xhr.responseText);
+    }
+
+})
+})
+
+>>>>>>> origin/main
 document.addEventListener('DOMContentLoaded', () => {
     document.querySelectorAll('[data-password-toggle]').forEach(button => {
         button.addEventListener('click', () => {

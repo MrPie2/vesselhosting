@@ -7,3 +7,9 @@ Schedule::call(function () {
     // Add expiry notification jobs here:
     // Domain::whereBetween('expiry_date',[now(),now()->addDays(30)])->...
 })->dailyAt('02:00')->name('domain-expiry-scan')->withoutOverlapping();
+<<<<<<< HEAD
+=======
+
+Schedule::command('hosting:suspend-expired')->everyMinute();
+ 
+>>>>>>> origin/main

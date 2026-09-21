@@ -14,7 +14,11 @@
                     Hosting Plan
                 </span>
 
+<<<<<<< HEAD
                 <h3 class="fw-bold mb-2">
+=======
+                <h3 class="fw-bold mb-2 plan" cpanel_planid="{{$plan->cpanel_planid}}">
+>>>>>>> origin/main
                     {{ $plan->name }}
                 </h3>
 
@@ -37,10 +41,16 @@
 
                     <label class="list-group-item d-flex justify-content-between align-items-center">
                         <div>
+<<<<<<< HEAD
                             <input type="radio"
                                    name="billing_cycle"
                                    value="monthly"
                                    checked>
+=======
+                            <input class="billing_cycle" type="radio"
+                                   name="billing_cycle"
+                                   value="1" amount="{{ $plan->amount * 1  }}">
+>>>>>>> origin/main
                             <span class="ms-2">Monthly</span>
                         </div>
 
@@ -51,9 +61,15 @@
 
                     <label class="list-group-item d-flex justify-content-between align-items-center">
                         <div>
+<<<<<<< HEAD
                             <input type="radio"
                                    name="billing_cycle"
                                    value="semi_annually">
+=======
+                            <input class="billing_cycle" type="radio"
+                                   name="billing_cycle"
+                                   value="6" amount="{{ $plan->amount * 6 }}">
+>>>>>>> origin/main
 
                             <span class="ms-2">Semi-Annually</span>
                         </div>
@@ -65,9 +81,15 @@
 
                     <label class="list-group-item d-flex justify-content-between align-items-center">
                         <div>
+<<<<<<< HEAD
                             <input type="radio"
                                    name="billing_cycle"
                                    value="annually">
+=======
+                            <input class="billing_cycle" type="radio"
+                                   name="billing_cycle"
+                                   value="12" amount="{{ $plan->amount * 12  }}">
+>>>>>>> origin/main
 
                             <span class="ms-2">Annually</span>
                         </div>
@@ -79,9 +101,15 @@
 
                     <label class="list-group-item d-flex justify-content-between align-items-center">
                         <div>
+<<<<<<< HEAD
                             <input type="radio"
                                    name="billing_cycle"
                                    value="biennially">
+=======
+                            <input class="billing_cycle" type="radio"
+                                   name="billing_cycle"
+                                   value="24" amount="{{ $plan->amount * 24 }}">
+>>>>>>> origin/main
 
                             <span class="ms-2">Biennially</span>
                         </div>
@@ -183,10 +211,18 @@
 <br>
 <div class="mb-3">
     <label class="small text-muted">Account Domain name</label>
+<<<<<<< HEAD
     <input type="text" placeholder="Domain name" class="form-control">
 </div>
 <div class="mb-3">
     <button class="btn btn-dark w-100 mt-4">Continue</button>
+=======
+    <input type="text" placeholder="Domain name" class="form-control domain-text">
+</div>
+<div class="mb-3 cart_amount" style="text-align: center"></div>
+<div class="mb-3">
+    <button class="btn btn-dark w-100 mt-4 add_to_cart">Continue to Cart Checkout</button>
+>>>>>>> origin/main
 
 </div>
 
