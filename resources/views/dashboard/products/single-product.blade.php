@@ -182,18 +182,11 @@
 <br>
 <div class="mb-3">
     <label class="small text-muted">Account Domain name</label>
-<<<<<<< HEAD
-    <input type="text" placeholder="Domain name" class="form-control">
-</div>
-<div class="mb-3">
-    <button class="btn btn-dark w-100 mt-4">Continue</button>
-=======
     <input type="text" placeholder="Domain name" class="form-control domain-text">
 </div>
 <div class="mb-3 cart_amount" style="text-align: center"></div>
 <div class="mb-3">
     <button class="btn btn-dark w-100 mt-4 add_to_cart">Continue to Cart Checkout</button>
->>>>>>> origin/main
 
 </div>
 
