@@ -17,17 +17,11 @@ $('#domain-search-form').on('submit', function(e) {
         method:"POST",
         data:{domain_text:domain_text},
         success:function(response){
-<<<<<<< HEAD
-            $('.search-results').html(response.message).addClass('alert alert-success');
-=======
             $('.search-results').html(response.message);
->>>>>>> origin/main
         }
     })
 })
 
-<<<<<<< HEAD
-=======
 $('.billing_cycle').click(function(){
     window.cycle=$(this).val();
     window.cycle_amount=$(this).attr('amount');
@@ -56,7 +50,6 @@ error: function (xhr) {
 })
 })
 
->>>>>>> origin/main
 document.addEventListener('DOMContentLoaded', () => {
     document.querySelectorAll('[data-password-toggle]').forEach(button => {
         button.addEventListener('click', () => {
