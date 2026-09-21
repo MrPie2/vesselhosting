@@ -21,13 +21,16 @@ class HostingController
 
     public function show_cpanel(){
             $data = Auth::user()->hostings()->get();
-            foreach ($data as $res) {
+            if ($data->isEmpty()) {
+    // No hosting accounts
+} else {
+
+        foreach ($data as $res) {
             $hostname = $res->server_hostname;
             $cpanelUsername = $res->username;
             }
-
             
-            $whmUsername=config('services.whm.username');
+                        $whmUsername=config('services.whm.username');
             $whmApiToken=config('services.whm.token');
             
             $response = Http::withHeaders([
@@ -40,8 +43,19 @@ class HostingController
                     'service' => 'cpaneld',
                 ]);
 
-$result = $response->json();
-return $loginUrl = $result['data']['url'] ?? null;
+                $result = $response->json();
+
+                return $loginUrl = $result['data']['url'] ?? null;
+
+
+
+
+
+            }
+            
+
+            
+
     }
     
 }
