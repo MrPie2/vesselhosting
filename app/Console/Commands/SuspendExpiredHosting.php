@@ -4,6 +4,7 @@ namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
 use App\Models\Hosting;
+use App\Services\SuspendExpiredHostingService;
 
 class SuspendExpiredHosting extends Command
 {
@@ -16,10 +17,9 @@ class SuspendExpiredHosting extends Command
         foreach($subscription as $sub){
             $this->suspendHosting($sub);
             $sub->update(['status'=>'suspended']);
-          
+            $this->info('ID: ' . $sub->id .' | Domain: ' . $sub->domain .' | Expiry: ' . $sub->expiry_date .' | Now: ' . now());   
     }
       
-    $this->info('Expired hosting accounts suspended successfully.');
     }
 
     public function suspendHosting($hosting){

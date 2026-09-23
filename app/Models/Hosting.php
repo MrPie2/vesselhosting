@@ -18,6 +18,7 @@ class Hosting extends Model
         'expiry_date',
         'plan_id',
         'password',
+        'duration',
 
     ];
 

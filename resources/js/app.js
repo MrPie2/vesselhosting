@@ -29,7 +29,6 @@ $('.billing_cycle').click(function(){
 })
 
 
-
 $(document).on('click', '.add_to_cart', function(){
  let cycle=window.cycle;
 let amount=window.cycle_amount;
