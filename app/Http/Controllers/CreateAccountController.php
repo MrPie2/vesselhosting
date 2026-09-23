@@ -16,7 +16,7 @@ class CreateAccountController
         $cycle=$request->input('cycle');
         $plan=$request->input('plan');
         $password=bin2hex(random_bytes(8));
-        $username='vh' . substr(hash('sha256', (string) $user_id), 0, 10);
+        $username='vh' . substr(hash('sha256'), 0, 10);
         $expiry_date = now()->addMonths((int) $cycle);
 
         $data = [
