@@ -14,7 +14,7 @@ class CreateAccountController
         $user_id = Auth::id();
         $domain=$request->input('domain');
         $cycle=$request->input('cycle');
-        $plan=$request->input('plan');
+        $plan=$request->input('cpanel_planid');
         $password=bin2hex(random_bytes(8));
         $username='vh' . substr(hash('sha256', (string) $user_id), 0, 10);
         $expiry_date = now()->addMonths((int) $cycle);
