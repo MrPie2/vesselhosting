@@ -19,6 +19,7 @@ class Hosting extends Model
         'plan_id',
         'password',
         'duration',
+        'status'
 
     ];
 

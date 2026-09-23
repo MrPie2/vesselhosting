@@ -38,6 +38,7 @@ class CreateAccountController
             'server_hostname' => "s15256.fra1.stableserver.net",
             'user_id' => $user_id,
             'duration' => $cycle,
+            'status' => 'active'
         ]); 
 
         // Call the create method of CreateAccountService
