@@ -14,7 +14,7 @@ class CreateAccountController
         $user_id = Auth::id();
         $domain=$request->input('domain');
         $cycle=$request->input('cycle');
-        $plan=$request->input('cpanel_planid');
+        $plan=$request->input('plan');
         $password=bin2hex(random_bytes(8));
         $username='vh' . substr(hash('sha256', (string) $user_id), 0, 10);
         $expiry_date = now()->addMonths((int) $cycle);
@@ -30,10 +30,10 @@ class CreateAccountController
         ];
 
         $addhosting = Hosting::create([
+            'plan_id' => $plan,
             'username' => $username,
             'domain' => $domain,
             'password' => $password,
-            'plan_id' => $plan,
             'expiry_date' => $expiry_date,
             'server_hostname' => "s15256.fra1.stableserver.net",
             'user_id' => $user_id,
