@@ -56,4 +56,8 @@ class AdminController
         ]);
         return back()->with('status','Hosting plan updated.');
     }
+
+    public function orders(){
+        //
+    }
 }

@@ -69,6 +69,8 @@ Route::get('/admin',[AdminController::class,'index'])->name('home');
 Route::middleware(['auth','admin'])->prefix('admin')->name('admin.')->group(function(){
     Route::get('/admin',[AdminController::class,'index'])->name('home');
     Route::get('/customers',[AdminController::class,'customers'])->name('customers');
+    Route::get('/orders',[AdminController::class,'orders'])->name('orders');
+
     Route::get('/domains',[AdminController::class,'domains'])->name('domains');
     Route::get('/hosting',[AdminController::class,'hosting'])->name('hosting');
     Route::get('/plans',[AdminController::class,'plans'])->name('plans');
