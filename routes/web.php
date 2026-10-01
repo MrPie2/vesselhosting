@@ -64,9 +64,10 @@ Route::middleware('auth')->prefix('dashboard')->name('dashboard.')->group(functi
     Route::get('/payments/paystack/callback',[PaymentController::class,'callback'])->name('payments.callback');
 });
 Route::post('/payments/paystack/webhook',[PaymentController::class,'webhook'])->name('payments.paystack.webhook');
+Route::get('/admin',[AdminController::class,'index'])->name('home');
 
 Route::middleware(['auth','admin'])->prefix('admin')->name('admin.')->group(function(){
-    Route::get('/',[AdminController::class,'index'])->name('home');
+    Route::get('/admin',[AdminController::class,'index'])->name('home');
     Route::get('/customers',[AdminController::class,'customers'])->name('customers');
     Route::get('/domains',[AdminController::class,'domains'])->name('domains');
     Route::get('/hosting',[AdminController::class,'hosting'])->name('hosting');

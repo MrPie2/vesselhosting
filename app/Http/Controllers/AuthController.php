@@ -18,7 +18,13 @@ class AuthController
             return back()->withErrors(['email'=>'The credentials do not match our records.'])->onlyInput('email');
         }
         $request->session()->regenerate();
-        return redirect()->intended(route('dashboard.home'));
+        if(Auth::user()->role === 'admin'){
+                    return redirect()->intended(route('admin.home'));
+
+        }else{
+                    return redirect()->intended(route('dashboard.home'));
+
+        }
     }
 
     public function register(Request $request) {

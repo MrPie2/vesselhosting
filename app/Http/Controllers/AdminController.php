@@ -2,21 +2,21 @@
 namespace App\Http\Controllers;
 
 use App\Models\Domain;
-use App\Models\HostingAccount;
-use App\Models\Order;
+use App\Models\Hosting;
+use App\Models\Orders;
 use App\Models\User;
 use App\Models\HostingPlan;
 use Illuminate\Http\Request;
 
-class AdminController extends Controller
+class AdminController 
 {
     public function index()
     {
         return view('admin.home', [
             'customers'=>User::where('role','customer')->count(),
             'domains'=>Domain::count(),
-            'hosting'=>HostingAccount::count(),
-            'orders'=>Order::latest()->take(8)->get(),
+            'hosting'=>Hosting::count(),
+            'orders'=>Orders::latest()->take(8)->get(),
         ]);
     }
 
