@@ -34,6 +34,22 @@ class ResellerClubService
 
         [$domainName, $tld] = $this->splitDomain($domain);
 
+        if ($this->userId === '' || $this->apiKey === '') {
+            return [
+                'success' => false,
+                'message' => 'ResellerClub API credentials are not configured on the server.',
+                'domain' => $domain,
+            ];
+        }
+
+        if ($this->legacyUrl === '') {
+            return [
+                'success' => false,
+                'message' => 'ResellerClub API URL is not configured on the server.',
+                'domain' => $domain,
+            ];
+        }
+
         try {
             /*
              * ResellerClub's HTTP API uses auth-userid/api-key query
@@ -73,6 +89,22 @@ class ResellerClubService
                     'success' => false,
                     'message' => 'ResellerClub returned an invalid availability response.',
                     'domain' => $domain,
+                ];
+            }
+
+            // ResellerClub can return API errors as JSON with HTTP 500.
+            // Surface the provider's safe error message instead of hiding it
+            // behind a generic availability failure.
+            if (isset($data['status']) && strtoupper((string) $data['status']) === 'ERROR') {
+                $providerMessage = $data['message'] ?? $data['error'] ?? null;
+
+                return [
+                    'success' => false,
+                    'message' => $providerMessage
+                        ? 'ResellerClub API error: ' . (string) $providerMessage
+                        : 'ResellerClub rejected the API request. Check the reseller ID, API key and server IP whitelist.',
+                    'domain' => $domain,
+                    'provider_status' => $data['status'],
                 ];
             }
 
