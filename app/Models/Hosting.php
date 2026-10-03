@@ -1,17 +1,17 @@
 <?php
 
 namespace App\Models;
-use App\Models\Plan;
-use App\Models\Domain;
+
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Hosting extends Model
 {
-    protected $table="hostings";
+    protected $table = 'hostings';
 
     protected $fillable = [
         'domain',
+        'domain_id',
         'user_id',
         'server_hostname',
         'username',
@@ -19,22 +19,27 @@ class Hosting extends Model
         'plan_id',
         'password',
         'duration',
-        'status'
-
+        'status',
+        'provisioning_status',
+        'provisioning_error',
     ];
 
-    public function hosting(): BelongsTo
-    {
-        return $this->belongsTo(Hosting::class);
-    }
+    protected $casts = [
+        'expiry_date' => 'datetime',
+    ];
 
     public function plan(): BelongsTo
     {
         return $this->belongsTo(Plan::class, 'plan_id');
     }
 
-    public function domain(): BelongsTo
+    public function domainRelation(): BelongsTo
     {
         return $this->belongsTo(Domain::class, 'domain_id');
+    }
+
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class);
     }
 }
