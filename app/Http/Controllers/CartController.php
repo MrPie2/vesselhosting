@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Plan;
+use App\Services\ResellerClubService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 
@@ -37,7 +38,7 @@ class CartController
         ]);
     }
 
-    public function add(Request $request)
+    public function add(Request $request, ResellerClubService $resellerClub)
     {
         $data = $request->validate([
             'plan_id' => 'required|integer|exists:plans,id',
@@ -50,6 +51,26 @@ class CartController
 
         if (!preg_match('/^(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z]{2,63}$/i', $domain)) {
             return response()->json(['message' => 'Enter a valid domain name.'], 422);
+        }
+
+        // A domain selected for registration must still be available
+        // when it reaches the server, not only when the browser checked it.
+        if ($data['domain_option'] === 'register') {
+            $availability = $resellerClub->check($domain);
+
+            if (!($availability['success'] ?? false)) {
+                return response()->json([
+                    'message' => $availability['message'] ?? 'Unable to verify domain availability.',
+                ], 422);
+            }
+
+            if (!($availability['available'] ?? false)) {
+                return response()->json([
+                    'message' => $domain . ' is no longer available. Please search for another domain.',
+                ], 422);
+            }
+
+            $domain = $availability['domain'] ?? $domain;
         }
 
         $plan = Plan::findOrFail($data['plan_id']);
