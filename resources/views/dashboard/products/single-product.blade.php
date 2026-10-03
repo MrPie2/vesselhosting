@@ -83,5 +83,135 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     });
 });
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const config = document.getElementById('domain-config');
+    const input = document.getElementById('domain-input');
+    const addButton = document.querySelector('.add_to_cart');
+    const status = document.getElementById('domain-status');
+    const searchButton = document.getElementById('domain-search-btn');
+    let available = false;
+
+    document.querySelectorAll('input[name="domain_option"]').forEach(function (radio) {
+        radio.addEventListener('change', function () {
+            if (config) config.classList.remove('d-none');
+            available = false;
+            if (status) status.textContent = '';
+            if (addButton) addButton.disabled = !document.querySelector('.billing_cycle:checked');
+            if (input) input.focus();
+        });
+    });
+
+    document.querySelectorAll('.billing_cycle').forEach(function (radio) {
+        radio.addEventListener('change', function () {
+            updateButton();
+        });
+    });
+
+    function updateButton() {
+        const option = document.querySelector('input[name="domain_option"]:checked')?.value;
+        const domain = (input?.value || '').trim();
+        const billing = document.querySelector('.billing_cycle:checked');
+
+        let enabled = !!billing && !!option && !!domain;
+
+        if (option === 'register') {
+            enabled = enabled && available;
+        }
+
+        if (addButton) addButton.disabled = !enabled;
+    }
+
+    async function checkAvailability() {
+        const domain = (input?.value || '').trim().toLowerCase();
+        if (!domain) {
+            if (status) status.innerHTML = '<span class="text-danger">Enter a domain name.</span>';
+            available = false;
+            updateButton();
+            return;
+        }
+
+        available = false;
+        updateButton();
+        if (searchButton) searchButton.disabled = true;
+        if (status) status.innerHTML = '<span class="text-muted">Checking availability...</span>';
+
+        try {
+            const response = await fetch('{{ route('domain.av') }}?domain=' + encodeURIComponent(domain), {
+                headers: { 'Accept': 'application/json' }
+            });
+            const data = await response.json();
+
+            if (data.success && data.available) {
+                available = true;
+                if (status) status.innerHTML = '<span class="text-success">' + (data.domain || domain) + ' is available.</span>';
+            } else {
+                available = false;
+                if (status) status.innerHTML = '<span class="text-danger">' + (data.message || 'Domain is not available.') + '</span>';
+            }
+        } catch (error) {
+            available = false;
+            if (status) status.innerHTML = '<span class="text-danger">Unable to check domain availability.</span>';
+        } finally {
+            if (searchButton) searchButton.disabled = false;
+            updateButton();
+        }
+    }
+
+    if (searchButton) searchButton.addEventListener('click', checkAvailability);
+
+    if (input) {
+        input.addEventListener('input', function () {
+            available = false;
+            updateButton();
+        });
+    }
+
+    if (addButton) {
+        addButton.addEventListener('click', async function () {
+            const option = document.querySelector('input[name="domain_option"]:checked')?.value;
+            const domain = (input?.value || '').trim();
+            const billing = document.querySelector('.billing_cycle:checked')?.value;
+            const planId = document.querySelector('.plan')?.dataset.planId;
+
+            if (!option || !domain || !billing || !planId) {
+                if (status) status.innerHTML = '<span class="text-danger">Please select a billing cycle and domain option.</span>';
+                return;
+            }
+
+            addButton.disabled = true;
+            addButton.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Adding...';
+
+            try {
+                const response = await fetch('{{ route('cart.add') }}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                    },
+                    body: JSON.stringify({
+                        plan_id: planId,
+                        billing_cycle: billing,
+                        domain: domain,
+                        domain_option: option
+                    })
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.message || 'Unable to add this item to your cart.');
+                }
+
+                window.location.href = data.redirect || '{{ route('cart.index') }}';
+            } catch (error) {
+                if (status) status.innerHTML = '<span class="text-danger">' + error.message + '</span>';
+                addButton.disabled = false;
+                addButton.textContent = 'Add to Cart';
+            }
+        });
+    }
+});
 </script>
 @endsection
