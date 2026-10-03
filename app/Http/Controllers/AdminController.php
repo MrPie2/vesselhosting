@@ -41,7 +41,7 @@ class AdminController
 
     public function plans()
     {
-        $plans = Plan::latest()->get();
+        $plans = Plan::orderByDesc('id')->get();
         return view('admin.plans', compact('plans'));
     }
 
