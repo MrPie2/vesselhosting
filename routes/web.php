@@ -43,10 +43,8 @@ Route::delete('/cart/{key}', [CartController::class, 'remove'])->name('cart.remo
 
 
 Route::middleware('auth')->prefix('checkout')->name('checkout.')->group(function(){
-    Route::get('/domain',[CheckoutController::class,'domain'])->name('domain');
-    Route::post('/domain',[CheckoutController::class,'purchaseDomain'])->name('domain.purchase');
-    Route::post('/hosting/{plan}',[CheckoutController::class,'hosting'])->name('hosting');
-    Route::post('/bundle/{plan}',[CheckoutController::class,'bundle'])->name('bundle');
+    Route::get('/',[CheckoutController::class,'show'])->name('show');
+    Route::post('/',[CheckoutController::class,'placeOrder'])->name('place');
 });
 
 Route::middleware('auth')->prefix('dashboard')->name('dashboard.')->group(function(){
