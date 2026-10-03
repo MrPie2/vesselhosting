@@ -62,8 +62,11 @@ class ResellerClubService
                 [
                     'auth-userid' => $this->userId,
                     'api-key' => $this->apiKey,
-                    'domain-name' => $domain,
-                    'tlds' => $tld,
+                    // The legacy API expects the label and TLD separately.
+                    // Send both parameters as arrays, matching ResellerClub's
+                    // documented GET format.
+                    'domain-name' => [$domainName],
+                    'tlds' => [$tld],
                 ]
             );
 
@@ -111,11 +114,19 @@ class ResellerClubService
             $status = $data[$domain] ?? null;
 
             /*
+             * Some responses use the domain label as the key because
+             * domain-name and tlds are submitted separately.
+             */
+            if ($status === null) {
+                $status = $data[$domainName] ?? null;
+            }
+
+            /*
              * Some responses can use a normalized/case-different key.
              */
             if ($status === null) {
                 foreach ($data as $key => $value) {
-                    if (strcasecmp((string) $key, $domain) === 0) {
+                    if (strcasecmp((string) $key, $domain) === 0 || strcasecmp((string) $key, $domainName) === 0) {
                         $status = $value;
                         break;
                     }
@@ -127,7 +138,17 @@ class ResellerClubService
             }
 
             if (is_string($status)) {
-                $status = strtolower($status);
+                $status = strtolower(trim($status));
+            }
+
+            // A successful legacy response is a hash map of domain => status.
+            // If the provider returns exactly one entry, use that value as
+            // a safe fallback instead of treating the response as unexpected.
+            if ($status === null && count($data) === 1) {
+                $onlyValue = reset($data);
+                if (is_string($onlyValue)) {
+                    $status = strtolower(trim($onlyValue));
+                }
             }
 
             if ($status === 'available') {
