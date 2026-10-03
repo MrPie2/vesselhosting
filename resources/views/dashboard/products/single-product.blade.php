@@ -22,7 +22,7 @@
 <input class="billing_cycle" type="radio" name="billing_cycle" value="{{ $months }}" amount="{{ $plan->amount * $months }}">
 <span class="ms-2">{{ $label }}</span>
 </div>
-<strong>\${{ number_format($plan->amount * $months, 2) }}</strong>
+<strong>${{ number_format($plan->amount * $months, 2) }}</strong>
 </label>
 @endforeach
 </div>
