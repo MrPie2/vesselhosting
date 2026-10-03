@@ -39,6 +39,7 @@ return [
         'url' => env('RESELLERCLUB_API_URL'),
         'user_id' => env('RESELLERCLUB_USER_ID'),
         'api_key' => env('RESELLERCLUB_API_KEY'),
+        'legacy_url' => env('RESELLERCLUB_LEGACY_API_URL', 'https://domaincheck.httpapi.com/api'),
     ],
     
     'whm' => [
