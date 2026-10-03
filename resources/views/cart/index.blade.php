@@ -33,7 +33,7 @@
                                     </div>
                                 </div>
                                 <div class="text-end">
-                                    <strong>${{ number_format($item['total'], 2) }}</strong>
+                                    <strong>{{ config('services.paystack.currency', 'USD') }} {{ number_format($item['total'], 2) }}</strong>
                                     <form method="POST" action="{{ route('cart.remove', $item['key']) }}" class="mt-2">
                                         @csrf
                                         @method('DELETE')
@@ -52,15 +52,15 @@
                         <h5 class="fw-bold mb-3">Order summary</h5>
                         <div class="d-flex justify-content-between mb-3">
                             <span class="text-muted">Subtotal</span>
-                            <strong>${{ number_format($total, 2) }}</strong>
+                            <strong>{{ config('services.paystack.currency', 'USD') }} {{ number_format($total, 2) }}</strong>
                         </div>
                         <div class="d-flex justify-content-between border-top pt-3">
                             <strong>Total</strong>
-                            <strong>${{ number_format($total, 2) }}</strong>
+                            <strong>{{ config('services.paystack.currency', 'USD') }} {{ number_format($total, 2) }}</strong>
                         </div>
-                        <button type="button" class="btn btn-dark w-100 mt-4" disabled>
+                        <a href="{{ route('checkout.show') }}" class="btn btn-dark w-100 mt-4">
                             Proceed to Checkout
-                        </button>
+                        </a>
                         <div class="small text-muted mt-3">
                             Payment checkout will create the order. Hosting provisioning will happen only after successful payment.
                         </div>
