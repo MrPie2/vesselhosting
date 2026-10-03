@@ -13,13 +13,14 @@ use App\Http\Controllers\ProductController;
 use App\Http\Controllers\SearchController;
 use App\Http\Controllers\PlanController;
 use App\Http\Controllers\ResellerClubController;
-use App\Http\Controllers\CreateAccountController;
+use App\Http\Controllers\CartController;
 
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', fn()=>view('landing'))->name('home');
 Route::post('/domain-search',[DomainSearchController::class,'search'])->name('domain.search');
 Route::get('/domain-av',[ResellerClubController::class,'check'])->name('domain.av');
+Route::get('/domain-suggestions',[ResellerClubController::class,'suggestions'])->name('domain.suggestions');
 
 Route::middleware('guest')->group(function(){
     Route::get('/login',[AuthController::class,'showLogin'])->name('login');
@@ -36,13 +37,14 @@ Route::get('/regiter-domain', function(){
 Route::post('/domain-s', [SearchController::class, 'search_domain'])->name('dashboard.domain-s');
 Route::get('/dashboard/products/index', [PlanController::class, 'index'])->name('dashboard.products');
 Route::get('/dashboard/products/single-product/{id}', [PlanController::class, 'single_prod'])->name('dashboard.single-product');
-Route::post('/create-account', [CreateAccountController::class, 'createhosting'])->name('dashboard.create');
+Route::get('/cart', [CartController::class, 'index'])->name('cart.index');
+Route::post('/cart/add', [CartController::class, 'add'])->name('cart.add');
+Route::delete('/cart/{key}', [CartController::class, 'remove'])->name('cart.remove');
+
 
 Route::middleware('auth')->prefix('checkout')->name('checkout.')->group(function(){
-    Route::get('/domain',[CheckoutController::class,'domain'])->name('domain');
-    Route::post('/domain',[CheckoutController::class,'purchaseDomain'])->name('domain.purchase');
-    Route::post('/hosting/{plan}',[CheckoutController::class,'hosting'])->name('hosting');
-    Route::post('/bundle/{plan}',[CheckoutController::class,'bundle'])->name('bundle');
+    Route::get('/',[CheckoutController::class,'show'])->name('show');
+    Route::post('/',[CheckoutController::class,'placeOrder'])->name('place');
 });
 
 Route::middleware('auth')->prefix('dashboard')->name('dashboard.')->group(function(){

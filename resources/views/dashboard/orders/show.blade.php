@@ -31,7 +31,7 @@ document.getElementById('pay')?.addEventListener('click', async () => {
     headers:{'X-CSRF-TOKEN':@json(csrf_token()),'Accept':'application/json'}
   });
   const data=await res.json();
-  if(data.status && data.data?.authorization_url){ window.location.href=data.data.authorization_url; return; }
+  if(data.status && data.authorization_url){ window.location.href=data.authorization_url; return; }
   btn.disabled=false; msg.textContent=data.message || 'Unable to initialize payment.';
 });
 </script>

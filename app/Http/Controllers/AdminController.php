@@ -1,28 +1,29 @@
 <?php
+
 namespace App\Http\Controllers;
 
 use App\Models\Domain;
 use App\Models\Hosting;
-use App\Models\Orders;
+use App\Models\Order;
+use App\Models\Plan;
 use App\Models\User;
-use App\Models\HostingPlan;
 use Illuminate\Http\Request;
 
-class AdminController 
+class AdminController
 {
     public function index()
     {
         return view('admin.home', [
-            'customers'=>User::where('role','customer')->count(),
-            'domains'=>Domain::count(),
-            'hosting'=>Hosting::count(),
-            'orders'=>Orders::latest()->take(8)->get(),
+            'customers' => User::where('role', 'customer')->count(),
+            'domains' => Domain::count(),
+            'hosting' => Hosting::count(),
+            'orders' => Order::latest()->take(8)->get(),
         ]);
     }
 
     public function customers()
     {
-        $customers = User::where('role','customer')->latest()->paginate(25);
+        $customers = User::where('role', 'customer')->latest()->paginate(25);
         return view('admin.customers', compact('customers'));
     }
 
@@ -34,30 +35,32 @@ class AdminController
 
     public function hosting()
     {
-        $hosting = HostingAccount::with('user','domain','plan')->latest()->paginate(25);
+        $hosting = Hosting::with('user', 'domainRelation', 'plan')->latest()->paginate(25);
         return view('admin.hosting', compact('hosting'));
     }
 
     public function plans()
     {
-        $plans = HostingPlan::latest()->get();
+        $plans = Plan::orderByDesc('id')->get();
         return view('admin.plans', compact('plans'));
     }
 
-    public function updatePlan(Request $request, HostingPlan $plan)
+    public function updatePlan(Request $request, Plan $plan)
     {
         $data = $request->validate([
-            'price_monthly'=>'required|numeric|min:0',
-            'active'=>'nullable|boolean',
+            'amount' => 'required|numeric|min:0',
         ]);
+
         $plan->update([
-            'price_monthly'=>$data['price_monthly'],
-            'active'=>$request->boolean('active'),
+            'amount' => $data['amount'],
         ]);
-        return back()->with('status','Hosting plan updated.');
+
+        return back()->with('status', 'Hosting plan updated.');
     }
 
-    public function orders(){
-        //
+    public function orders()
+    {
+        $orders = Order::with('user')->latest()->paginate(25);
+        return view('admin.orders', compact('orders'));
     }
 }

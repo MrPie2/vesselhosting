@@ -1,145 +1,156 @@
 <?php
+
 namespace App\Http\Controllers;
 
-use App\Models\Domain;
-use App\Models\HostingPlan;
 use App\Models\Order;
 use App\Models\OrderItem;
-use App\Models\TldPrice;
+use App\Models\Plan;
+use App\Services\ResellerClubService;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
 class CheckoutController
 {
-    public function domain(Request $request)
+    public function show(Request $request)
     {
-        $data = $request->validate([
-            'domain'=>'required|string|max:253|regex:/^[a-z0-9.-]+$/i',
+        $cart = $request->session()->get('cart', []);
+
+        if (empty($cart)) {
+            return redirect()->route('cart.index')->withErrors([
+                'cart' => 'Your cart is empty.',
+            ]);
+        }
+
+        $items = [];
+        $subtotal = 0;
+
+        foreach ($cart as $item) {
+            $plan = Plan::find($item['plan_id']);
+
+            if (!$plan) {
+                continue;
+            }
+
+            $months = (int) ($item['billing_cycle'] ?? 1);
+            $total = round((float) $plan->amount * $months, 2);
+
+            $items[] = [
+                'plan' => $plan,
+                'domain' => strtolower(trim($item['domain'])),
+                'domain_option' => $item['domain_option'],
+                'billing_cycle' => $months,
+                'total' => $total,
+            ];
+
+            $subtotal += $total;
+        }
+
+        if (empty($items)) {
+            $request->session()->forget('cart');
+            return redirect()->route('cart.index')->withErrors([
+                'cart' => 'The selected hosting plans are no longer available.',
+            ]);
+        }
+
+        return view('checkout.index', [
+            'items' => $items,
+            'subtotal' => round($subtotal, 2),
+            'currency' => config('services.paystack.currency', 'USD'),
         ]);
-
-        $domain = strtolower(trim($data['domain']));
-        $price = $this->priceFor($domain);
-
-        return view('checkout.domain', compact('domain','price'));
     }
 
-    public function purchaseDomain(Request $request)
+    public function placeOrder(Request $request, ResellerClubService $resellerClub)
     {
-        $data = $request->validate([
-            'domain'=>'required|string|max:253|regex:/^[a-z0-9.-]+$/i',
-            'years'=>'required|integer|min:1|max:10',
-        ]);
+        $cart = $request->session()->get('cart', []);
 
-        $price = $this->priceFor($data['domain']);
-        $total = $price->register_price * $data['years'];
+        if (empty($cart)) {
+            return redirect()->route('cart.index')->withErrors([
+                'cart' => 'Your cart is empty.',
+            ]);
+        }
 
-        $order = Order::create([
-            'user_id'=>Auth::id(),
-            'number'=>'VH-'.strtoupper(Str::random(10)),
-            'status'=>'pending',
-            'provisioning_status'=>'not_started',
-            'currency'=>$price->currency,
-            'subtotal'=>$total,
-            'tax'=>0,
-            'total'=>$total,
-        ]);
+        $order = DB::transaction(function () use ($cart, $request, $resellerClub) {
+            $currency = config('services.paystack.currency', 'USD');
+            $subtotal = 0;
+            $prepared = [];
 
-        OrderItem::create([
-            'order_id'=>$order->id,
-            'type'=>'domain',
-            'description'=>'Domain registration · '.$data['domain'],
-            'reference'=>strtolower($data['domain']),
-            'quantity'=>$data['years'],
-            'unit_price'=>$price->register_price,
-            'total'=>$total,
-            'meta'=>['years'=>(int)$data['years'],'tld'=>$price->tld],
-        ]);
+            foreach ($cart as $item) {
+                $plan = Plan::lockForUpdate()->find($item['plan_id']);
 
-        return redirect()->route('dashboard.orders.show',$order);
-    }
+                if (!$plan) {
+                    abort(422, 'One of the selected hosting plans is no longer available.');
+                }
 
-    public function hosting(Request $request, HostingPlan $plan)
-    {
-        abort_unless($plan->active,404);
+                $months = (int) ($item['billing_cycle'] ?? 1);
+                if (!in_array($months, [1, 6, 12, 24], true)) {
+                    abort(422, 'Invalid billing cycle.');
+                }
 
-        $data = $request->validate(['domain'=>'required|string|max:253']);
+                $domain = strtolower(trim($item['domain']));
+                if (!preg_match('/^(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z]{2,63}$/i', $domain)) {
+                    abort(422, 'Please enter a valid domain name.');
+                }
 
-        $order = Order::create([
-            'user_id'=>Auth::id(),
-            'number'=>'VH-'.strtoupper(Str::random(10)),
-            'status'=>'pending',
-            'provisioning_status'=>'not_started',
-            'currency'=>config('services.app.currency','USD'),
-            'subtotal'=>$plan->price_monthly,
-            'tax'=>0,
-            'total'=>$plan->price_monthly,
-        ]);
+                $domainOption = $item['domain_option'] ?? null;
+                if (!in_array($domainOption, ['register', 'transfer', 'existing'], true)) {
+                    abort(422, 'Invalid domain option.');
+                }
 
-        OrderItem::create([
-            'order_id'=>$order->id,
-            'type'=>'hosting',
-            'description'=>$plan->name.' hosting · '.$data['domain'],
-            'reference'=>strtolower($data['domain']),
-            'unit_price'=>$plan->price_monthly,
-            'total'=>$plan->price_monthly,
-            'meta'=>['hosting_plan_id'=>$plan->id],
-        ]);
+                if ($domainOption === 'register') {
+                    $availability = $resellerClub->check($domain);
+                    if (!($availability['success'] ?? false) || !($availability['available'] ?? false)) {
+                        abort(422, 'The selected domain is no longer available.');
+                    }
+                }
 
-        return redirect()->route('dashboard.orders.show',$order);
-    }
+                $hostingTotal = round((float) $plan->amount * $months, 2);
+                $subtotal += $hostingTotal;
 
-    public function bundle(Request $request, HostingPlan $plan)
-    {
-        abort_unless($plan->active,404);
+                $prepared[] = [
+                    'plan' => $plan,
+                    'domain' => $domain,
+                    'domain_option' => $domainOption,
+                    'months' => $months,
+                    'hosting_total' => $hostingTotal,
+                ];
+            }
 
-        $data = $request->validate([
-            'domain'=>'required|string|max:253',
-            'years'=>'required|integer|min:1|max:10',
-        ]);
+            $order = Order::create([
+                'id' => (string) Str::uuid(),
+                'user_id' => $request->user()->id,
+                'number' => 'VH-' . strtoupper(Str::random(10)),
+                'status' => 'pending',
+                'provisioning_status' => 'not_started',
+                'currency' => $currency,
+                'subtotal' => $subtotal,
+                'tax' => 0,
+                'total' => $subtotal,
+            ]);
 
-        $price = $this->priceFor($data['domain']);
-        $domainTotal = $price->register_price * $data['years'];
-        $total = $domainTotal + $plan->price_monthly;
+            foreach ($prepared as $item) {
+                $order->items()->create([
+                    'type' => 'hosting',
+                    'description' => $item['plan']->name . ' hosting · ' . $item['domain'],
+                    'reference' => $item['domain'],
+                    'quantity' => 1,
+                    'unit_price' => $item['hosting_total'],
+                    'total' => $item['hosting_total'],
+                    'meta' => [
+                        'plan_id' => $item['plan']->id,
+                        'plan_name' => $item['plan']->name,
+                        'cpanel_plan' => $item['plan']->name,
+                        'billing_cycle' => $item['months'],
+                        'domain_option' => $item['domain_option'],
+                    ],
+                ]);
+            }
 
-        $order = Order::create([
-            'user_id'=>Auth::id(),
-            'number'=>'VH-'.strtoupper(Str::random(10)),
-            'status'=>'pending',
-            'provisioning_status'=>'not_started',
-            'currency'=>$price->currency,
-            'subtotal'=>$total,
-            'tax'=>0,
-            'total'=>$total,
-        ]);
+            return $order;
+        });
 
-        OrderItem::create([
-            'order_id'=>$order->id,'type'=>'domain',
-            'description'=>'Domain registration · '.$data['domain'],
-            'reference'=>strtolower($data['domain']),
-            'quantity'=>$data['years'],'unit_price'=>$price->register_price,
-            'total'=>$domainTotal,'meta'=>['years'=>(int)$data['years'],'tld'=>$price->tld],
-        ]);
+        $request->session()->forget('cart');
 
-        OrderItem::create([
-            'order_id'=>$order->id,'type'=>'hosting',
-            'description'=>$plan->name.' hosting · '.$data['domain'],
-            'reference'=>strtolower($data['domain']),
-            'quantity'=>1,'unit_price'=>$plan->price_monthly,
-            'total'=>$plan->price_monthly,'meta'=>['hosting_plan_id'=>$plan->id],
-        ]);
-
-        return redirect()->route('dashboard.orders.show',$order);
-    }
-
-    private function priceFor(string $domain): TldPrice
-    {
-        $parts = explode('.', strtolower(trim($domain)));
-        $tld = '.'.array_pop($parts);
-
-        $price = TldPrice::where('tld',$tld)->where('active',true)->first();
-        abort_unless($price,422,'This TLD is not configured for sale yet.');
-
-        return $price;
+        return redirect()->route('dashboard.orders.show', $order);
     }
 }
