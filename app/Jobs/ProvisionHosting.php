@@ -56,6 +56,7 @@ class ProvisionHosting implements ShouldQueue
             $result = $createAccountService->create([
                 'username' => $username,
                 'domain' => strtolower($hostingItem->reference),
+                'domain_id' => $domain->id,
                 'password' => $password,
                 'plan' => $meta['cpanel_plan'] ?? $meta['plan_name'] ?? $hostingItem->description,
             ]);
@@ -63,6 +64,11 @@ class ProvisionHosting implements ShouldQueue
             $this->assertWhmSuccess($result);
 
             $planId = $meta['plan_id'] ?? null;
+
+            $domain = Domain::firstOrCreate(
+                ['user_id' => $order->user_id, 'domain' => strtolower($hostingItem->reference)],
+                ['status' => ($meta['domain_option'] ?? 'existing') === 'existing' ? 'external' : 'pending']
+            );
 
             Hosting::create([
                 'user_id' => $order->user_id,
@@ -78,8 +84,9 @@ class ProvisionHosting implements ShouldQueue
                 'provisioning_error' => null,
             ]);
 
+            $domainOption = $meta['domain_option'] ?? 'existing';
             $order->update([
-                'provisioning_status' => 'completed',
+                'provisioning_status' => in_array($domainOption, ['register', 'transfer'], true) ? 'awaiting_domain' : 'completed',
                 'provisioning_error' => null,
             ]);
         } catch (Throwable $e) {
