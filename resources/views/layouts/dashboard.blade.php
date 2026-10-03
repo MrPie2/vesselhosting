@@ -12,7 +12,7 @@
 </head>
 <body>
 <div class="dashboard-shell">
-<aside class="sidebar p-3"><a href="{{ route('home') }}" class="d-flex align-items-center gap-2 mb-4 px-2 text-white"><span class="feature-icon" style="width:40px;height:40px"><i class="bi bi-water"></i></span><strong>Vessel Host</strong></a>
+<aside class="sidebar p-3" id="dashboard-sidebar"><a href="{{ route('home') }}" class="d-flex align-items-center gap-2 mb-4 px-2 text-white"><span class="feature-icon" style="width:40px;height:40px"><i class="bi bi-water"></i></span><strong>Vessel Host</strong></a>
 
 <nav class="d-grid gap-1">
 
@@ -37,9 +37,15 @@
         <button class="btn btn-outline-light w-100 rounded-3"><i class="bi bi-box-arrow-right"></i> Sign out</button></form>
     </div>
 </aside>
+<div class="sidebar-overlay" id="sidebar-overlay"></div>
 <main class="dashboard-main">
-    <header class="topbar d-flex align-items-center justify-content-between px-3 px-lg-4"><div>
-        <span class="fw-bold">{{ $title ?? 'Dashboard' }}</span></div>
+    <header class="topbar d-flex align-items-center justify-content-between px-3 px-lg-4">
+        <div class="d-flex align-items-center gap-2">
+            <button type="button" class="btn btn-light mobile-menu-btn" id="mobile-menu-btn" aria-label="Open navigation" aria-controls="dashboard-sidebar" aria-expanded="false">
+                <i class="bi bi-list fs-4"></i>
+            </button>
+            <span class="fw-bold">{{ $title ?? 'Dashboard' }}</span>
+        </div>
         <div class="d-flex align-items-center gap-3">
             <span class="small text-secondary d-none d-md-block">{{ auth()->user()?->email }}</span>
             <div class="rounded-circle bg-vh text-white d-grid place-items-center" style="width:38px;height:38px">{{ strtoupper(substr(auth()->user()?->name,0,1)) }}</div>
@@ -52,5 +58,43 @@
 <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
 <script src="{{ asset('assets/js/app.js') }}"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const sidebar = document.getElementById('dashboard-sidebar');
+    const overlay = document.getElementById('sidebar-overlay');
+    const button = document.getElementById('mobile-menu-btn');
+
+    function toggleSidebar(open) {
+        if (!sidebar) return;
+        sidebar.classList.toggle('mobile-open', open);
+        if (overlay) overlay.classList.toggle('show', open);
+        if (button) {
+            button.setAttribute('aria-expanded', open ? 'true' : 'false');
+            button.innerHTML = open
+                ? '<i class="bi bi-x-lg"></i>'
+                : '<i class="bi bi-list fs-4"></i>';
+        }
+        document.body.classList.toggle('sidebar-open', open);
+    }
+
+    if (button) button.addEventListener('click', function () {
+        toggleSidebar(!sidebar.classList.contains('mobile-open'));
+    });
+
+    if (overlay) overlay.addEventListener('click', function () {
+        toggleSidebar(false);
+    });
+
+    document.querySelectorAll('#dashboard-sidebar a').forEach(function (link) {
+        link.addEventListener('click', function () {
+            if (window.innerWidth <= 991) toggleSidebar(false);
+        });
+    });
+
+    window.addEventListener('resize', function () {
+        if (window.innerWidth > 991) toggleSidebar(false);
+    });
+});
+</script>
 </body>
 </html>
