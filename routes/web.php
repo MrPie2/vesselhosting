@@ -13,7 +13,6 @@ use App\Http\Controllers\ProductController;
 use App\Http\Controllers\SearchController;
 use App\Http\Controllers\PlanController;
 use App\Http\Controllers\ResellerClubController;
-use App\Http\Controllers\CreateAccountController;
 use App\Http\Controllers\CartController;
 
 use Illuminate\Support\Facades\Route;
@@ -43,7 +42,6 @@ Route::post('/cart/add', [CartController::class, 'add'])->name('cart.add');
 Route::delete('/cart/{key}', [CartController::class, 'remove'])->name('cart.remove');
 
 // Legacy provisioning endpoint retained for now; customer-facing plan flow no longer calls it.
-Route::post('/create-account', [CreateAccountController::class, 'createhosting'])->name('dashboard.create');
 
 Route::middleware('auth')->prefix('checkout')->name('checkout.')->group(function(){
     Route::get('/domain',[CheckoutController::class,'domain'])->name('domain');
