@@ -24,38 +24,117 @@ class ResellerClubService
     {
         $domain = $this->normaliseDomain($domain);
 
-        if (!$domain) return ['success' => false, 'message' => 'Domain name is required.'];
+        if (!$domain) {
+            return ['success' => false, 'message' => 'Domain name is required.'];
+        }
 
-        if (!preg_match('/^(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z]{2,63}$/i', $domain)) {
+        if (!preg_match('/^(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\\.)+[a-z]{2,63}$/i', $domain)) {
             return ['success' => false, 'message' => 'Enter a valid domain name.'];
         }
 
         [$domainName, $tld] = $this->splitDomain($domain);
 
         try {
-            $response = Http::timeout(15)->acceptJson()->withHeaders([
-                'x-user-id' => $this->userId,
-                'Authorization' => 'ApiKey ' . $this->apiKey,
-            ])->get($this->url . '/domains/available', [
-                'domainName' => $domainName,
-                'tlds' => $tld,
-            ]);
+            /*
+             * ResellerClub's HTTP API uses auth-userid/api-key query
+             * parameters. The availability endpoint returns a map where
+             * the requested domain is keyed to a status such as:
+             * available, regthroughus, regthroughothers or unknown.
+             */
+            $response = Http::timeout(20)->acceptJson()->get(
+                $this->legacyUrl . '/domains/available.json',
+                [
+                    'auth-userid' => $this->userId,
+                    'api-key' => $this->apiKey,
+                    'domain-name' => $domain,
+                    'tlds' => $tld,
+                ]
+            );
 
             if ($response->failed()) {
-                return ['success' => false, 'message' => 'ResellerClub availability check failed.', 'domain' => $domain];
+                $body = trim($response->body());
+
+                report(new \RuntimeException(
+                    'ResellerClub availability request failed: HTTP ' .
+                    $response->status() . ($body ? ' - ' . $body : '')
+                ));
+
+                return [
+                    'success' => false,
+                    'message' => 'ResellerClub availability check failed. Please verify your API credentials and IP whitelist.',
+                    'domain' => $domain,
+                ];
             }
 
             $data = $response->json();
 
+            if (!is_array($data)) {
+                return [
+                    'success' => false,
+                    'message' => 'ResellerClub returned an invalid availability response.',
+                    'domain' => $domain,
+                ];
+            }
+
+            $status = $data[$domain] ?? null;
+
+            /*
+             * Some responses can use a normalized/case-different key.
+             */
+            if ($status === null) {
+                foreach ($data as $key => $value) {
+                    if (strcasecmp((string) $key, $domain) === 0) {
+                        $status = $value;
+                        break;
+                    }
+                }
+            }
+
+            if (is_array($status)) {
+                $status = $status['status'] ?? $status['availability'] ?? null;
+            }
+
+            if (is_string($status)) {
+                $status = strtolower($status);
+            }
+
+            if ($status === 'available') {
+                return [
+                    'success' => true,
+                    'domain' => $domain,
+                    'available' => true,
+                    'status' => 'available',
+                    'data' => $data,
+                ];
+            }
+
+            if (in_array($status, ['regthroughus', 'regthroughothers', 'unknown'], true)) {
+                return [
+                    'success' => true,
+                    'domain' => $domain,
+                    'available' => false,
+                    'status' => $status,
+                    'data' => $data,
+                    'message' => $status === 'unknown'
+                        ? 'ResellerClub could not determine the domain status. Please try again.'
+                        : $domain . ' is already registered.',
+                ];
+            }
+
             return [
-                'success' => true,
+                'success' => false,
+                'message' => 'ResellerClub returned an unexpected availability response.',
                 'domain' => $domain,
-                'available' => (bool) ($data['available'] ?? false),
                 'data' => $data,
             ];
         } catch (Throwable $e) {
             report($e);
-            return ['success' => false, 'message' => 'Domain availability is temporarily unavailable.', 'domain' => $domain];
+
+            return [
+                'success' => false,
+                'message' => 'Unable to connect to ResellerClub. Please try again shortly.',
+                'domain' => $domain,
+            ];
         }
     }
 
