@@ -54,6 +54,7 @@
 <label class="small text-muted" for="domain-input">Domain name</label>
 <div class="input-group">
 <input type="text" id="domain-input" placeholder="yourdomain.com" class="form-control domain-text" autocomplete="off">
+<button type="button" id="domain-search-btn" class="btn btn-dark">Search</button>
 <span class="input-group-text d-none" id="domain-spinner"><span class="spinner-border spinner-border-sm"></span></span>
 </div>
 <div id="domain-status" class="small mt-2"></div>
@@ -70,4 +71,17 @@
 </div>
 </div>
 </div>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const config = document.getElementById('domain-config');
+    const input = document.getElementById('domain-input');
+
+    document.querySelectorAll('input[name="domain_option"]').forEach(function (radio) {
+        radio.addEventListener('change', function () {
+            if (config) config.classList.remove('d-none');
+            if (input) input.focus();
+        });
+    });
+});
+</script>
 @endsection
