@@ -33,9 +33,22 @@ class Hosting extends Model
         return $this->belongsTo(Plan::class, 'plan_id');
     }
 
-    public function domainRelation(): BelongsTo
+    /**
+     * The domain attached to this hosting account.
+     *
+     * Hostings store the related domain ID in domain_id.
+     */
+    public function domain(): BelongsTo
     {
         return $this->belongsTo(Domain::class, 'domain_id');
+    }
+
+    /**
+     * Backwards-compatible explicit relationship name.
+     */
+    public function domainRelation(): BelongsTo
+    {
+        return $this->domain();
     }
 
     public function user(): BelongsTo
