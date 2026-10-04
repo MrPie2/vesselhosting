@@ -77,4 +77,7 @@ Route::middleware(['auth','admin'])->prefix('admin')->name('admin.')->group(func
     Route::get('/hosting',[AdminController::class,'hosting'])->name('hosting');
     Route::get('/plans',[AdminController::class,'plans'])->name('plans');
     Route::patch('/plans/{plan}',[AdminController::class,'updatePlan'])->name('plans.update');
+    Route::get('/domain-prices',[AdminController::class,'domainPrices'])->name('domain-prices');
+    Route::post('/domain-prices',[AdminController::class,'storeDomainPrice'])->name('domain-prices.store');
+    Route::patch('/domain-prices/{domainPrice}',[AdminController::class,'updateDomainPrice'])->name('domain-prices.update');
 });
