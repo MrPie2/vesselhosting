@@ -79,6 +79,8 @@ class CheckoutController
                 'plan' => $plan,
                 'domain' => $domain,
                 'domain_option' => $item['domain_option'],
+                'nameserver_type' => $item['nameserver_type'] ?? 'default',
+                'nameservers' => $item['nameservers'] ?? [],
                 'billing_cycle' => $months,
                 'hosting_total' => $hostingTotal,
                 'domain_price' => $domainPrice,
@@ -151,6 +153,14 @@ class CheckoutController
                 }
 
                 $domainOption = $item['domain_option'] ?? null;
+                $nameserverType = $item['nameserver_type'] ?? 'default';
+                $nameservers = array_values(array_filter(array_map('trim', $item['nameservers'] ?? [])));
+                if (!in_array($nameserverType, ['default', 'custom'], true)) {
+                    abort(422, 'Invalid nameserver option.');
+                }
+                if ($nameserverType === 'custom' && count($nameservers) < 2) {
+                    abort(422, 'At least two custom nameservers are required.');
+                }
                 if (!in_array($domainOption, ['register', 'transfer', 'existing'], true)) {
                     abort(422, 'Invalid domain option.');
                 }
@@ -170,6 +180,8 @@ class CheckoutController
                     'plan' => $plan,
                     'domain' => $domain,
                     'domain_option' => $domainOption,
+                    'nameserver_type' => $nameserverType,
+                    'nameservers' => $nameservers,
                     'months' => $months,
                     'hosting_total' => $hostingTotal,
                     'domain_price' => $domainPrice,
@@ -233,6 +245,8 @@ class CheckoutController
                         'meta' => [
                             'domain' => $item['domain'],
                             'domain_option' => $item['domain_option'],
+                            'nameserver_type' => $item['nameserver_type'] ?? 'default',
+                            'nameservers' => $item['nameservers'] ?? [],
                         ],
                     ]);
                 }
