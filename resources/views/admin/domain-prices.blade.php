@@ -54,6 +54,7 @@
                         <div class="d-flex justify-content-between align-items-center mb-3">
                             <h5 class="fw-bold mb-0">{{ $price->tld }}</h5>
                             <div class="form-check form-switch">
+                                <input type="hidden" name="active" value="0">
                                 <input class="form-check-input" type="checkbox" name="active" value="1" {{ $price->active ? 'checked' : '' }}>
                                 <label class="form-check-label small">Sell</label>
                             </div>
