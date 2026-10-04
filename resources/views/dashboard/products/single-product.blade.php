@@ -147,7 +147,19 @@ document.addEventListener('DOMContentLoaded', function () {
                 if (status) status.innerHTML = '<span class="text-success">' + (data.domain || domain) + ' is available.</span>';
             } else {
                 available = false;
-                if (status) status.innerHTML = '<span class="text-danger">' + (data.message || 'Domain is not available.') + '</span>';
+                let message = data.message || 'Domain is not available.';
+                if (data.provider_http_status) {
+                    message += '<br><strong>HTTP Status:</strong> ' + data.provider_http_status;
+                }
+                if (data.provider_response) {
+                    let provider = typeof data.provider_response === 'object'
+                        ? JSON.stringify(data.provider_response, null, 2)
+                        : String(data.provider_response);
+                    message += '<div class="mt-2"><strong>ResellerClub response:</strong><pre class="small bg-light border rounded p-2 mt-1 mb-0" style="white-space:pre-wrap;word-break:break-word;">' +
+                        provider.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;') +
+                        '</pre></div>';
+                }
+                if (status) status.innerHTML = '<span class="text-danger">' + message + '</span>';
             }
         } catch (error) {
             available = false;
