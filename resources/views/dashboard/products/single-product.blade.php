@@ -133,7 +133,12 @@ document.addEventListener('DOMContentLoaded', function () {
             if (data.success && data.available) {
                 available = true;
                 const selectedDomain = data.domain || domain;
-                if (status) status.innerHTML = '<span class="text-success">' + selectedDomain + ' is available.</span>';
+                if (status) {
+                    const priceText = data.price_configured
+                        ? ' · {{ config('services.paystack.currency', 'USD') }} ' + Number(data.price || 0).toFixed(2) + ' / year'
+                        : ' · Price not configured';
+                    status.innerHTML = '<span class="text-success">' + selectedDomain + ' is available' + priceText + '.</span>';
+                }
                 await loadDomainSuggestions(selectedDomain);
             } else {
                 available = false;
