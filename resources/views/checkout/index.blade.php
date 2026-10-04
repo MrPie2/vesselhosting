@@ -38,6 +38,9 @@
                                 <div class="col-md-6">
                                     <span class="text-secondary d-block">Domain</span>
                                     <strong>{{ $item['domain'] }}</strong>
+                                @if(($item['domain_price'] ?? 0) > 0)
+                                    <div class="text-secondary mt-1">{{ $currency }} {{ number_format($item['domain_price'], 2) }} domain fee / year</div>
+                                @endif
                                 </div>
                                 <div class="col-md-6">
                                     <span class="text-secondary d-block">Domain option</span>
