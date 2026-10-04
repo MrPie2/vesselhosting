@@ -57,17 +57,21 @@ class ResellerClubService
              * the requested domain is keyed to a status such as:
              * available, regthroughus, regthroughothers or unknown.
              */
+            // Laravel/Guzzle serializes PHP arrays as domain-name[0]=...
+            // but the legacy ResellerClub API expects repeated query keys:
+            // domain-name=example.com&domain-name=example.net&tlds=com&tlds=net.
+            // Build the query explicitly so the provider receives the exact
+            // parameter names documented by ResellerClub.
+            $query = http_build_query([
+                'auth-userid' => $this->userId,
+                'api-key' => $this->apiKey,
+            ]);
+
+            $query .= '&domain-name=' . rawurlencode($domain);
+            $query .= '&tlds=' . rawurlencode($tld);
+
             $response = Http::timeout(20)->acceptJson()->get(
-                $this->legacyUrl . '/domains/available.json',
-                [
-                    'auth-userid' => $this->userId,
-                    'api-key' => $this->apiKey,
-                    // ResellerClub's legacy availability API expects the
-                    // complete domain name(s) in domain-name and the
-                    // extension(s) separately in tlds.
-                    'domain-name' => [$domain],
-                    'tlds' => [$tld],
-                ]
+                $this->legacyUrl . '/domains/available.json?' . $query
             );
 
             if ($response->failed()) {
