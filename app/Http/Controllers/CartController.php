@@ -55,17 +55,9 @@ class CartController
             'domain' => 'required|string|max:253',
             'billing_cycle' => 'required|integer|in:1,6,12,24',
             'domain_option' => 'required|in:register,transfer,existing',
-            'nameserver_type' => 'required|in:default,custom',
-            'nameservers' => 'nullable|array|max:4',
-            'nameservers.*' => 'nullable|string|max:253',
         ]);
 
         $domain = strtolower(trim($data['domain']));
-        $nameservers = array_values(array_filter(array_map('trim', $data['nameservers'] ?? [])));
-        if ($data['nameserver_type'] === 'custom' && count($nameservers) < 2) {
-            return response()->json(['message' => 'Enter at least Nameserver 1 and Nameserver 2.'], 422);
-        }
-
         if (!preg_match('/^(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z]{2,63}$/i', $domain)) {
             return response()->json(['message' => 'Enter a valid domain name.'], 422);
         }
@@ -127,8 +119,6 @@ class CartController
             'plan_name' => $plan->name,
             'domain' => $domain,
             'domain_option' => $data['domain_option'],
-            'nameserver_type' => $data['nameserver_type'],
-            'nameservers' => $data['nameserver_type'] === 'custom' ? $nameservers : [],
             'billing_cycle' => $months,
             'unit_price' => $unitPrice,
             'hosting_total' => round($unitPrice * $months, 2),
