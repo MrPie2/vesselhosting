@@ -24,7 +24,7 @@ class CheckoutController
             ? '.' . strtolower(ltrim(substr($domain, $firstDot + 1), '.'))
             : '';
 
-        $pricing = DomainPrice::where('tld', $tld)->where('active', true)->first();
+        $pricing = DomainPrice::forTld($tld)->where('active', true)->first();
 
         if (!$pricing) {
             abort(422, 'Domain pricing is not configured for ' . $tld . '.');
