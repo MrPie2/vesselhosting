@@ -11,7 +11,21 @@ class ResellerClubController
     public function check(Request $request, ResellerClubService $resellerClub)
     {
         $data = $request->validate(['domain' => 'required|string|max:253']);
-        return response()->json($resellerClub->check($data['domain']));
+        $result = $resellerClub->check($data['domain']);
+
+        if (($result['success'] ?? false) && ($result['available'] ?? false)) {
+            $domain = $result['domain'] ?? $data['domain'];
+            $firstDot = strpos($domain, '.');
+            $tld = $firstDot !== false
+                ? '.' . strtolower(ltrim(substr($domain, $firstDot + 1), '.'))
+                : '';
+            $price = DomainPrice::where('tld', $tld)->where('active', true)->first();
+
+            $result['price'] = $price ? (float) $price->registration_price : null;
+            $result['price_configured'] = (bool) $price;
+        }
+
+        return response()->json($result);
     }
 
     public function suggestions(Request $request, ResellerClubService $resellerClub)
