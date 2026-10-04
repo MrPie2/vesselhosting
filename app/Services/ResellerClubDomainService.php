@@ -9,7 +9,7 @@ use Throwable;
 
 class ResellerClubDomainService
 {
-    public function register(Domain $domain, int $years = 1): array
+    public function register(Domain $domain, int $years = 1, ?array $customNameservers = null): array
     {
         $userId = (string) config('services.resellerclub.user_id');
         $apiKey = (string) config('services.resellerclub.api_key');
@@ -21,7 +21,9 @@ class ResellerClubDomainService
             throw new RuntimeException('ResellerClub domain registration is not configured. Set RESELLERCLUB_CUSTOMER_ID and RESELLERCLUB_CONTACT_ID.');
         }
 
-        $nameservers = config('services.resellerclub.nameservers', []);
+        $nameservers = $customNameservers !== null
+            ? array_values(array_filter(array_map('trim', $customNameservers), fn ($ns) => is_string($ns) && $ns !== ''))
+            : config('services.resellerclub.nameservers', []);
         $nameservers = is_array($nameservers)
             ? array_values(array_filter($nameservers, fn ($ns) => is_string($ns) && trim($ns) !== ''))
             : [];
