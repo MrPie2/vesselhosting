@@ -49,11 +49,25 @@ class CheckoutController
         $subtotal = 0;
 
         foreach ($cart as $item) {
-            $plan = Plan::find($item['plan_id']);
-
-            if (!$plan) {
+            if (($item['type'] ?? 'hosting') === 'domain') {
+                $domain = strtolower(trim($item['domain']));
+                $domainPrice = $this->domainPrice($domain, 'register');
+                $items[] = [
+                    'type' => 'domain',
+                    'plan' => null,
+                    'domain' => $domain,
+                    'domain_option' => 'register',
+                    'billing_cycle' => 0,
+                    'hosting_total' => 0,
+                    'domain_price' => $domainPrice,
+                    'total' => $domainPrice,
+                ];
+                $subtotal += $domainPrice;
                 continue;
             }
+
+            $plan = Plan::find($item['plan_id']);
+            if (!$plan) continue;
 
             $months = (int) ($item['billing_cycle'] ?? 1);
             $hostingTotal = round((float) $plan->amount * $months, 2);
@@ -61,6 +75,7 @@ class CheckoutController
             $domainPrice = $this->domainPrice($domain, $item['domain_option'] ?? 'existing');
 
             $items[] = [
+                'type' => 'hosting',
                 'plan' => $plan,
                 'domain' => $domain,
                 'domain_option' => $item['domain_option'],
@@ -69,7 +84,6 @@ class CheckoutController
                 'domain_price' => $domainPrice,
                 'total' => round($hostingTotal + $domainPrice, 2),
             ];
-
             $subtotal += $hostingTotal + $domainPrice;
         }
 
@@ -103,16 +117,33 @@ class CheckoutController
             $prepared = [];
 
             foreach ($cart as $item) {
-                $plan = Plan::lockForUpdate()->find($item['plan_id']);
+                if (($item['type'] ?? 'hosting') === 'domain') {
+                    $domain = strtolower(trim($item['domain'] ?? ''));
+                    if (!preg_match('/^(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\\.)+[a-z]{2,63}$/i', $domain)) {
+                        abort(422, 'Please enter a valid domain name.');
+                    }
 
-                if (!$plan) {
-                    abort(422, 'One of the selected hosting plans is no longer available.');
+                    $availability = $resellerClub->check($domain);
+                    if (!($availability['success'] ?? false) || !($availability['available'] ?? false)) {
+                        abort(422, 'The selected domain is no longer available.');
+                    }
+
+                    $domainPrice = $this->domainPrice($domain, 'register');
+                    $subtotal += $domainPrice;
+                    $prepared[] = [
+                        'type' => 'domain',
+                        'domain' => $domain,
+                        'domain_option' => 'register',
+                        'domain_price' => $domainPrice,
+                    ];
+                    continue;
                 }
+
+                $plan = Plan::lockForUpdate()->find($item['plan_id']);
+                if (!$plan) abort(422, 'One of the selected hosting plans is no longer available.');
 
                 $months = (int) ($item['billing_cycle'] ?? 1);
-                if (!in_array($months, [1, 6, 12, 24], true)) {
-                    abort(422, 'Invalid billing cycle.');
-                }
+                if (!in_array($months, [1, 6, 12, 24], true)) abort(422, 'Invalid billing cycle.');
 
                 $domain = strtolower(trim($item['domain']));
                 if (!preg_match('/^(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z]{2,63}$/i', $domain)) {
@@ -158,6 +189,23 @@ class CheckoutController
             ]);
 
             foreach ($prepared as $item) {
+                if ($item['type'] === 'domain') {
+                    $order->items()->create([
+                        'type' => 'domain',
+                        'description' => 'Domain registration · ' . $item['domain'],
+                        'reference' => $item['domain'],
+                        'quantity' => 1,
+                        'unit_price' => $item['domain_price'],
+                        'total' => $item['domain_price'],
+                        'meta' => [
+                            'domain' => $item['domain'],
+                            'domain_option' => 'register',
+                            'years' => 1,
+                        ],
+                    ]);
+                    continue;
+                }
+
                 $order->items()->create([
                     'type' => 'hosting',
                     'description' => $item['plan']->name . ' hosting · ' . $item['domain'],

@@ -16,8 +16,14 @@ class CartController
         $total = 0;
 
         foreach ($cart as $key => &$item) {
-            $plan = Plan::find($item['plan_id']);
+            if (($item['type'] ?? 'hosting') === 'domain') {
+                $item['domain_price'] = (float) ($item['domain_price'] ?? 0);
+                $item['total'] = $item['domain_price'];
+                $total += $item['total'];
+                continue;
+            }
 
+            $plan = Plan::find($item['plan_id']);
             if (!$plan) {
                 unset($cart[$key]);
                 continue;
@@ -126,6 +132,54 @@ class CartController
         return response()->json([
             'success' => true,
             'message' => 'Hosting plan added to cart.',
+            'redirect' => route('cart.index'),
+        ]);
+    }
+
+    public function addDomain(Request $request, ResellerClubService $resellerClub)
+    {
+        $data = $request->validate([
+            'domain' => 'required|string|max:253',
+        ]);
+
+        $domain = strtolower(trim($data['domain']));
+        if (!preg_match('/^(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\\.)+[a-z]{2,63}$/i', $domain)) {
+            return response()->json(['message' => 'Enter a valid domain name.'], 422);
+        }
+
+        $availability = $resellerClub->check($domain);
+        if (!($availability['success'] ?? false) || !($availability['available'] ?? false)) {
+            return response()->json([
+                'message' => $availability['message'] ?? $domain . ' is not available.',
+            ], 422);
+        }
+
+        $domain = $availability['domain'] ?? $domain;
+        $tld = '.' . strtolower(ltrim(substr($domain, strpos($domain, '.') + 1), '.'));
+        $pricing = DomainPrice::forTld($tld)->where('active', true)->first();
+
+        if (!$pricing) {
+            return response()->json([
+                'message' => 'We have not configured a registration price for ' . $tld . ' yet. Please choose another extension.',
+            ], 422);
+        }
+
+        $key = (string) Str::uuid();
+        $cart = $request->session()->get('cart', []);
+        $cart[$key] = [
+            'key' => $key,
+            'type' => 'domain',
+            'domain' => $domain,
+            'domain_option' => 'register',
+            'domain_price' => (float) $pricing->registration_price,
+            'total' => (float) $pricing->registration_price,
+        ];
+
+        $request->session()->put('cart', $cart);
+
+        return response()->json([
+            'success' => true,
+            'message' => $domain . ' added to cart.',
             'redirect' => route('cart.index'),
         ]);
     }

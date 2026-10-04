@@ -13,7 +13,7 @@ class PaymentController
 {
     public function initialize(Request $request, Order $order)
     {
-        abort_unless($order->user_id === $request->user()->id, 403);
+        abort_unless((string) $order->user_id === (string) $request->user()->id, 403);
         abort_if($order->status === 'paid', 422, 'Order is already paid.');
         abort_if(!in_array($order->status, ['pending', 'payment_failed'], true), 422, 'This order cannot be paid.');
 

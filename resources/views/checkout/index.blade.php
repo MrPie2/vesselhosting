@@ -5,7 +5,7 @@
     <div class="mb-4">
         <span class="badge bg-light text-dark mb-2">Checkout</span>
         <h3 class="fw-bold mb-1">Review your order</h3>
-        <p class="text-secondary mb-0">Confirm your hosting and domain details before payment.</p>
+        <p class="text-secondary mb-0">Confirm your domain and hosting selections before payment.</p>
     </div>
 
     @if($errors->any())
@@ -23,11 +23,11 @@
                         <div class="card-body p-4">
                             <div class="d-flex justify-content-between gap-3">
                                 <div>
-                                    <div class="small text-uppercase text-secondary fw-semibold">Hosting</div>
-                                    <h5 class="fw-bold mb-1">{{ $item['plan']->name }}</h5>
-                                    <div class="small text-secondary">
-                                        {{ $item['billing_cycle'] }} month billing period
-                                    </div>
+                                    <div class="small text-uppercase text-secondary fw-semibold">{{ $item['type'] === 'domain' ? 'Domain' : 'Hosting' }}</div>
+                                    <h5 class="fw-bold mb-1">{{ $item['type'] === 'domain' ? $item['domain'] : $item['plan']->name }}</h5>
+                                    @if($item['type'] !== 'domain')
+                                    <div class="small text-secondary">{{ $item['billing_cycle'] }} month billing period</div>
+                                    @endif
                                 </div>
                                 <strong>{{ $currency }} {{ number_format($item['total'], 2) }}</strong>
                             </div>
@@ -38,13 +38,13 @@
                                 <div class="col-md-6">
                                     <span class="text-secondary d-block">Domain</span>
                                     <strong>{{ $item['domain'] }}</strong>
-                                @if(($item['domain_price'] ?? 0) > 0)
-                                    <div class="text-secondary mt-1">{{ $currency }} {{ number_format($item['domain_price'], 2) }} domain fee / year</div>
-                                @endif
+                                    @if(($item['domain_price'] ?? 0) > 0)
+                                        <div class="text-secondary mt-1">{{ $currency }} {{ number_format($item['domain_price'], 2) }} domain fee / year</div>
+                                    @endif
                                 </div>
                                 <div class="col-md-6">
-                                    <span class="text-secondary d-block">Domain option</span>
-                                    <strong>{{ ucfirst($item['domain_option']) }}</strong>
+                                    <span class="text-secondary d-block">Product</span>
+                                    <strong>{{ $item['type'] === 'domain' ? 'Domain registration' : ucfirst($item['domain_option']) . ' + hosting' }}</strong>
                                 </div>
                             </div>
                         </div>
