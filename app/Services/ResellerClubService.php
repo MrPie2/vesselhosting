@@ -62,10 +62,10 @@ class ResellerClubService
                 [
                     'auth-userid' => $this->userId,
                     'api-key' => $this->apiKey,
-                    // The legacy API expects the label and TLD separately.
-                    // Send both parameters as arrays, matching ResellerClub's
-                    // documented GET format.
-                    'domain-name' => [$domainName],
+                    // ResellerClub's legacy availability API expects the
+                    // complete domain name(s) in domain-name and the
+                    // extension(s) separately in tlds.
+                    'domain-name' => [$domain],
                     'tlds' => [$tld],
                 ]
             );
@@ -178,7 +178,8 @@ class ResellerClubService
                 'success' => false,
                 'message' => 'ResellerClub returned an unexpected availability response.',
                 'domain' => $domain,
-                'data' => $data,
+                'provider_http_status' => $response->status(),
+                'provider_response' => $data,
             ];
         } catch (Throwable $e) {
             report($e);
