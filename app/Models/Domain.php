@@ -35,4 +35,12 @@ class Domain extends Model
     {
         return $this->hasMany(DnsRecord::class);
     }
+
+    /**
+     * Hosting accounts attached to this domain.
+     */
+    public function hosting(): HasMany
+    {
+        return $this->hasMany(Hosting::class, 'domain_id');
+    }
 }
