@@ -250,40 +250,48 @@ class ResellerClubService
     public function suggestions(string $domain, int $limit = 10): array
     {
         $domain = $this->normaliseDomain($domain);
-        if (!$domain) return [];
+        if (!$domain || $this->userId === '' || $this->apiKey === '') return [];
 
-        [$keyword, $tld] = $this->splitDomain($domain);
+        [$keyword] = $this->splitDomain($domain);
         $keyword = preg_replace('/[-]+/', ' ', $keyword);
 
         try {
-            $response = Http::timeout(15)->acceptJson()->get($this->legacyUrl . '/domains/v5/suggest-names.json', [
+            // exact-match=true asks ResellerClub for the same keyword across
+            // the TLDs available to this reseller, rather than related words.
+            $query = http_build_query([
                 'auth-userid' => $this->userId,
                 'api-key' => $this->apiKey,
                 'keyword' => $keyword,
-                'tld-only' => $tld,
-                'exact-match' => 'false',
+                'exact-match' => 'true',
                 'adult' => 'false',
             ]);
+
+            $response = Http::timeout(15)->acceptJson()->get(
+                $this->legacyUrl . '/domains/v5/suggest-names.json?' . $query
+            );
 
             if ($response->failed()) return [];
 
             $payload = $response->json();
+            if (!is_array($payload)) return [];
+
             $suggestions = [];
+            foreach ($payload as $name => $availability) {
+                if (count($suggestions) >= $limit) break;
 
-            $collect = function ($value) use (&$collect, &$suggestions, $limit): void {
-                if (count($suggestions) >= $limit || !is_array($value)) return;
+                $name = strtolower(trim((string) $name));
+                if (!str_contains($name, '.')) continue;
 
-                foreach ($value as $key => $item) {
-                    if (is_string($key) && str_contains($key, '.')) $suggestions[] = strtolower($key);
-                    if (is_string($item) && str_contains($item, '.')) $suggestions[] = strtolower($item);
-                    if (is_array($item)) $collect($item);
-                    if (count($suggestions) >= $limit) break;
-                }
-            };
+                $isAvailable = is_array($availability)
+                    ? (($availability['status'] ?? $availability['availability'] ?? null) === 'available')
+                    : strtolower(trim((string) $availability)) === 'available';
 
-            $collect($payload);
+                if (!$isAvailable) continue;
 
-            return array_values(array_unique(array_slice($suggestions, 0, $limit)));
+                $suggestions[] = $name;
+            }
+
+            return array_values(array_unique($suggestions));
         } catch (Throwable $e) {
             report($e);
             return [];
