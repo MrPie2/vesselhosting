@@ -83,6 +83,67 @@ class ResellerClubDomainService
         }
     }
 
+    public function setNameservers(Domain $domain, array $nameservers): array
+    {
+        $userId = (string) config('services.resellerclub.user_id');
+        $apiKey = (string) config('services.resellerclub.api_key');
+        $url = rtrim((string) (config('services.resellerclub.url') ?: 'https://httpapi.com/api'), '/');
+
+        $nameservers = array_values(array_filter(
+            array_map(fn ($ns) => strtolower(trim((string) $ns)), $nameservers),
+            fn ($ns) => $ns !== ''
+        ));
+
+        if ($userId === '' || $apiKey === '') {
+            throw new RuntimeException('ResellerClub domain management is not configured.');
+        }
+
+        if (count($nameservers) < 2 || count($nameservers) > 4) {
+            throw new RuntimeException('Provide between 2 and 4 nameservers.');
+        }
+
+        if (!$domain->reseller_order_id) {
+            throw new RuntimeException('This domain does not have a ResellerClub registration order ID, so its nameservers cannot be changed from Vesselhost.');
+        }
+
+        $query = http_build_query([
+            'auth-userid' => $userId,
+            'api-key' => $apiKey,
+            'order-id' => $domain->reseller_order_id,
+        ]);
+
+        foreach ($nameservers as $nameserver) {
+            $query .= '&ns=' . rawurlencode($nameserver);
+        }
+
+        try {
+            $response = Http::timeout(30)->acceptJson()->post($url . '/domains/modify-ns.json?' . $query);
+            $data = $response->json();
+
+            if ($response->failed()) {
+                throw new RuntimeException($this->providerMessage($response->status(), $response->body()));
+            }
+
+            if (is_array($data) && strtoupper((string) ($data['status'] ?? '')) === 'ERROR') {
+                throw new RuntimeException('ResellerClub API error: ' . ($data['message'] ?? $data['error'] ?? 'Nameserver change was rejected.'));
+            }
+
+            $domain->forceFill([
+                'nameserver_1' => $nameservers[0] ?? null,
+                'nameserver_2' => $nameservers[1] ?? null,
+                'nameserver_3' => $nameservers[2] ?? null,
+                'nameserver_4' => $nameservers[3] ?? null,
+            ])->save();
+
+            return ['success' => true, 'response' => $data, 'nameservers' => $nameservers];
+        } catch (Throwable $e) {
+            report($e);
+            throw $e instanceof RuntimeException
+                ? $e
+                : new RuntimeException('Unable to update domain nameservers: ' . $e->getMessage(), 0, $e);
+        }
+    }
+
     private function providerMessage(int $status, string $body): string
     {
         $data = json_decode($body, true);
