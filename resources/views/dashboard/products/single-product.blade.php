@@ -132,7 +132,9 @@ document.addEventListener('DOMContentLoaded', function () {
 
             if (data.success && data.available) {
                 available = true;
-                if (status) status.innerHTML = '<span class="text-success">' + (data.domain || domain) + ' is available.</span>';
+                const selectedDomain = data.domain || domain;
+                if (status) status.innerHTML = '<span class="text-success">' + selectedDomain + ' is available.</span>';
+                await loadDomainSuggestions(selectedDomain);
             } else {
                 available = false;
                 let message = data.message || 'Domain is not available.';
@@ -174,6 +176,53 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     if (searchButton) searchButton.addEventListener('click', checkAvailability);
+
+    async function loadDomainSuggestions(domain) {
+        const wrapper = document.getElementById('domain-suggestions');
+        const list = document.getElementById('suggestion-list');
+
+        if (!wrapper || !list) return;
+
+        wrapper.classList.add('d-none');
+        list.innerHTML = '<div class="text-muted small">Finding other available extensions...</div>';
+
+        try {
+            const response = await fetch('{{ route('domain.suggestions') }}?domain=' + encodeURIComponent(domain), {
+                headers: { 'Accept': 'application/json' }
+            });
+            const data = await response.json();
+            const current = domain.toLowerCase();
+            const suggestions = (data.suggestions || []).filter(function (item) {
+                return item.domain && item.domain.toLowerCase() !== current;
+            }).slice(0, 10);
+
+            if (!suggestions.length) {
+                wrapper.classList.add('d-none');
+                return;
+            }
+
+            list.innerHTML = suggestions.map(function (item) {
+                return '<div class="list-group-item d-flex align-items-center justify-content-between gap-3 py-3">' +
+                    '<div><div class="fw-semibold">' + item.domain + '</div>' +
+                    '<div class="small text-muted">' + (item.tld || '') + ' · ' + '{{ config('services.paystack.currency', 'USD') }} ' + Number(item.price || 0).toFixed(2) + ' / year</div></div>' +
+                    '<button type="button" class="btn btn-sm btn-outline-dark suggestion-add" data-domain="' + item.domain + '">Add to Cart</button>' +
+                    '</div>';
+            }).join('');
+
+            wrapper.classList.remove('d-none');
+
+            list.querySelectorAll('.suggestion-add').forEach(function (button) {
+                button.addEventListener('click', function () {
+                    input.value = button.dataset.domain;
+                    available = true;
+                    updateButton();
+                    addButton?.click();
+                });
+            });
+        } catch (error) {
+            wrapper.classList.add('d-none');
+        }
+    }
 
     if (input) {
         input.addEventListener('input', function () {
