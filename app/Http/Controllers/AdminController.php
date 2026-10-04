@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Domain;
+use App\Models\DomainPrice;
 use App\Models\Hosting;
 use App\Models\Order;
 use App\Models\Plan;
@@ -56,6 +57,48 @@ class AdminController
         ]);
 
         return back()->with('status', 'Hosting plan updated.');
+    }
+
+    public function domainPrices()
+    {
+        $domainPrices = DomainPrice::orderBy('tld')->get();
+
+        return view('admin.domain-prices', compact('domainPrices'));
+    }
+
+    public function storeDomainPrice(Request $request)
+    {
+        $data = $request->validate([
+            'tld' => ['required', 'string', 'max:100'],
+            'registration_price' => ['required', 'numeric', 'min:0'],
+            'renewal_price' => ['required', 'numeric', 'min:0'],
+            'transfer_price' => ['required', 'numeric', 'min:0'],
+        ]);
+
+        $data['tld'] = '.' . ltrim(strtolower(trim($data['tld'])), '.');
+
+        DomainPrice::create($data);
+
+        return back()->with('status', 'Domain extension pricing added.');
+    }
+
+    public function updateDomainPrice(Request $request, DomainPrice $domainPrice)
+    {
+        $data = $request->validate([
+            'registration_price' => ['required', 'numeric', 'min:0'],
+            'renewal_price' => ['required', 'numeric', 'min:0'],
+            'transfer_price' => ['required', 'numeric', 'min:0'],
+            'active' => ['nullable', 'boolean'],
+        ]);
+
+        $domainPrice->update([
+            'registration_price' => $data['registration_price'],
+            'renewal_price' => $data['renewal_price'],
+            'transfer_price' => $data['transfer_price'],
+            'active' => $request->boolean('active'),
+        ]);
+
+        return back()->with('status', $domainPrice->tld . ' pricing updated.');
     }
 
     public function orders()
