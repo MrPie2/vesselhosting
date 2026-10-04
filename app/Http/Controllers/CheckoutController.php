@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\DomainPrice;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\Plan;
@@ -12,6 +13,28 @@ use Illuminate\Support\Str;
 
 class CheckoutController
 {
+    private function domainPrice(string $domain, string $option): float
+    {
+        if (!in_array($option, ['register', 'transfer'], true)) {
+            return 0;
+        }
+
+        $firstDot = strpos($domain, '.');
+        $tld = $firstDot !== false
+            ? '.' . strtolower(ltrim(substr($domain, $firstDot + 1), '.'))
+            : '';
+
+        $pricing = DomainPrice::where('tld', $tld)->where('active', true)->first();
+
+        if (!$pricing) {
+            abort(422, 'Domain pricing is not configured for ' . $tld . '.');
+        }
+
+        return (float) ($option === 'transfer'
+            ? $pricing->transfer_price
+            : $pricing->registration_price);
+    }
+
     public function show(Request $request)
     {
         $cart = $request->session()->get('cart', []);
@@ -33,17 +56,21 @@ class CheckoutController
             }
 
             $months = (int) ($item['billing_cycle'] ?? 1);
-            $total = round((float) $plan->amount * $months, 2);
+            $hostingTotal = round((float) $plan->amount * $months, 2);
+            $domain = strtolower(trim($item['domain']));
+            $domainPrice = $this->domainPrice($domain, $item['domain_option'] ?? 'existing');
 
             $items[] = [
                 'plan' => $plan,
-                'domain' => strtolower(trim($item['domain'])),
+                'domain' => $domain,
                 'domain_option' => $item['domain_option'],
                 'billing_cycle' => $months,
-                'total' => $total,
+                'hosting_total' => $hostingTotal,
+                'domain_price' => $domainPrice,
+                'total' => round($hostingTotal + $domainPrice, 2),
             ];
 
-            $subtotal += $total;
+            $subtotal += $hostingTotal + $domainPrice;
         }
 
         if (empty($items)) {
@@ -105,7 +132,8 @@ class CheckoutController
                 }
 
                 $hostingTotal = round((float) $plan->amount * $months, 2);
-                $subtotal += $hostingTotal;
+                $domainPrice = $this->domainPrice($domain, $domainOption);
+                $subtotal += $hostingTotal + $domainPrice;
 
                 $prepared[] = [
                     'plan' => $plan,
@@ -113,6 +141,7 @@ class CheckoutController
                     'domain_option' => $domainOption,
                     'months' => $months,
                     'hosting_total' => $hostingTotal,
+                    'domain_price' => $domainPrice,
                 ];
             }
 
@@ -144,6 +173,21 @@ class CheckoutController
                         'domain_option' => $item['domain_option'],
                     ],
                 ]);
+
+                if ($item['domain_price'] > 0 && in_array($item['domain_option'], ['register', 'transfer'], true)) {
+                    $order->items()->create([
+                        'type' => 'domain',
+                        'description' => ucfirst($item['domain_option']) . ' domain · ' . $item['domain'],
+                        'reference' => $item['domain'],
+                        'quantity' => 1,
+                        'unit_price' => $item['domain_price'],
+                        'total' => $item['domain_price'],
+                        'meta' => [
+                            'domain' => $item['domain'],
+                            'domain_option' => $item['domain_option'],
+                        ],
+                    ]);
+                }
             }
 
             return $order;
