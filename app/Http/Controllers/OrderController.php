@@ -12,7 +12,7 @@ class OrderController
     }
 
     public function show(Order $order) {
-        abort_unless($order->user_id === Auth::id(),403);
+        abort_unless((string) $order->user_id === (string) Auth::id(), 403);
         $order->load('items');
         return view('dashboard.orders.show', compact('order'));
     }
