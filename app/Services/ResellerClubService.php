@@ -67,7 +67,7 @@ class ResellerClubService
                 'api-key' => $this->apiKey,
             ]);
 
-            $query .= '&domain-name=' . rawurlencode($domain);
+            $query .= '&domain-name=' . rawurlencode($domainName);
             $query .= '&tlds=' . rawurlencode($tld);
 
             $response = Http::timeout(20)->acceptJson()->get(
@@ -120,6 +120,10 @@ class ResellerClubService
             }
 
             $status = $data[$domain] ?? null;
+
+            // The legacy API normally keys the response by the full domain,
+            // but the request's domain-name value is the SLD. Accept both
+            // shapes because the provider may return either.
 
             /*
              * Some responses use the domain label as the key because
