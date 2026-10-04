@@ -62,7 +62,6 @@
 <div class="small fw-semibold mb-2">Related domain suggestions</div>
 <div id="suggestion-list" class="list-group"></div>
 </div>
->
 </div>
 
 <div class="mt-4 mb-3 cart_amount text-center"></div>
