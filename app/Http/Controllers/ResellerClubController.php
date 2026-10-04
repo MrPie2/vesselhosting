@@ -19,7 +19,7 @@ class ResellerClubController
             $tld = $firstDot !== false
                 ? '.' . strtolower(ltrim(substr($domain, $firstDot + 1), '.'))
                 : '';
-            $price = DomainPrice::where('tld', $tld)->where('active', true)->first();
+            $price = DomainPrice::forTld($tld)->where('active', true)->first();
 
             $result['price'] = $price ? (float) $price->registration_price : null;
             $result['price_configured'] = (bool) $price;
@@ -37,7 +37,7 @@ class ResellerClubController
         $suggestions = collect($suggestions)
             ->map(function (string $name) {
                 $tld = '.' . strtolower(ltrim(substr($name, strpos($name, '.') + 1), '.'));
-                $price = DomainPrice::where('tld', $tld)->where('active', true)->first();
+                $price = DomainPrice::forTld($tld)->where('active', true)->first();
 
                 if (!$price) {
                     return null;

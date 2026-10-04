@@ -88,7 +88,7 @@ class CartController
                 ? '.' . strtolower(ltrim(substr($domain, $firstDot + 1), '.'))
                 : '';
 
-            $pricing = DomainPrice::where('tld', $tld)->where('active', true)->first();
+            $pricing = DomainPrice::forTld($tld)->where('active', true)->first();
 
             if (!$pricing) {
                 return response()->json([
@@ -102,7 +102,7 @@ class CartController
             $tld = $firstDot !== false
                 ? '.' . strtolower(ltrim(substr($domain, $firstDot + 1), '.'))
                 : '';
-            $pricing = DomainPrice::where('tld', $tld)->where('active', true)->first();
+            $pricing = DomainPrice::forTld($tld)->where('active', true)->first();
             $domainPrice = $pricing ? (float) $pricing->transfer_price : 0;
         }
         $key = (string) Str::uuid();

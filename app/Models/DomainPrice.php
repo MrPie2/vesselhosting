@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 
 class DomainPrice extends Model
@@ -13,6 +14,13 @@ class DomainPrice extends Model
         'transfer_price',
         'active',
     ];
+
+    public function scopeForTld(Builder $query, string $tld): Builder
+    {
+        $normalized = '.' . ltrim(strtolower(trim($tld)), '.');
+
+        return $query->whereRaw("LOWER(TRIM(tld)) = ?", [$normalized]);
+    }
 
     protected $casts = [
         'registration_price' => 'decimal:2',
