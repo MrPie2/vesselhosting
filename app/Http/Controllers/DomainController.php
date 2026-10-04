@@ -15,13 +15,13 @@ class DomainController
     }
 
     public function show(Domain $domain) {
-        abort_unless($domain->user_id === Auth::id(),403);
+        abort_unless((string) $domain->user_id === (string) Auth::id(), 403);
         $domain->load('dnsRecords','hosting');
         return view('dashboard.domains.show', compact('domain'));
     }
 
     public function renew(Request $request, Domain $domain) {
-        abort_unless($domain->user_id === Auth::id(),403);
+        abort_unless((string) $domain->user_id === (string) Auth::id(), 403);
         $data = $request->validate(['years'=>'required|integer|min:1|max:10']);
 
         $parts = explode('.', $domain->name);
