@@ -3,6 +3,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Domain;
 use App\Models\TldPrice;
+use App\Services\ResellerClubDomainService;
 use App\Contracts\Registrar;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -18,6 +19,33 @@ class DomainController
         abort_unless((string) $domain->user_id === (string) Auth::id(), 403);
         $domain->load('dnsRecords','hosting');
         return view('dashboard.domains.show', compact('domain'));
+    }
+
+    public function updateNameservers(Request $request, Domain $domain, ResellerClubDomainService $domainService)
+    {
+        abort_unless((string) $domain->user_id === (string) Auth::id(), 403);
+
+        $data = $request->validate([
+            'nameserver_type' => 'required|in:default,custom',
+            'nameservers' => 'nullable|array|max:4',
+            'nameservers.*' => 'nullable|string|max:253',
+        ]);
+
+        $nameservers = $data['nameserver_type'] === 'default'
+            ? config('services.resellerclub.nameservers', [])
+            : array_values(array_filter(array_map('trim', $data['nameservers'] ?? [])));
+
+        if (!is_array($nameservers) || count($nameservers) < 2) {
+            return back()->withErrors(['nameservers' => 'At least Nameserver 1 and Nameserver 2 are required.'])->withInput();
+        }
+
+        try {
+            $domainService->setNameservers($domain, $nameservers);
+        } catch (\Throwable $e) {
+            return back()->withErrors(['nameservers' => $e->getMessage()])->withInput();
+        }
+
+        return back()->with('status', 'Nameservers updated successfully.');
     }
 
     public function renew(Request $request, Domain $domain) {
