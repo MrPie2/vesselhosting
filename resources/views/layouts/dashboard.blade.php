@@ -22,6 +22,8 @@
 <a class="{{ request()->routeIs('admin.domains*')?'active':'' }}" href="{{ route('admin.domains') }}"><i class="bi bi-globe2"></i> Domains</a>
 <a class="{{ request()->routeIs('admin.hosting*')?'active':'' }}" href="{{ route('admin.hosting') }}"><i class="bi bi-server"></i> Hosting</a>
 <a class="{{ request()->routeIs('admin.orders*')?'active':'' }}" href="{{ route('admin.orders') }}"><i class="bi bi-receipt"></i> Billing</a>
+<a class="{{ request()->routeIs('admin.plans*')?'active':'' }}" href="{{ route('admin.plans') }}"><i class="bi bi-box-seam"></i> Hosting Plans</a>
+<a class="{{ request()->routeIs('admin.domain-prices*')?'active':'' }}" href="{{ route('admin.domain-prices') }}"><i class="bi bi-tags"></i> Domain Pricing</a>
 
 @else
 <div class="small text-uppercase opacity-50 px-2 mb-2">Workspace</div>
