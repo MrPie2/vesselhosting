@@ -62,6 +62,59 @@
 <div class="small fw-semibold mb-2">Related domain suggestions</div>
 <div id="suggestion-list" class="list-group"></div>
 </div>
+
+<div id="nameserver-config" class="mt-4 d-none">
+    <h6 class="fw-bold mb-2">Nameservers</h6>
+    <p class="text-muted small mb-3">Choose whether to use Vesselhost nameservers or provide your own.</p>
+
+    <ul class="nav nav-tabs mb-3" role="tablist">
+        <li class="nav-item" role="presentation">
+            <button type="button" class="nav-link active nameserver-tab" data-nameserver-type="default">
+                Default
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button type="button" class="nav-link nameserver-tab" data-nameserver-type="custom">
+                Custom
+            </button>
+        </li>
+    </ul>
+
+    <input type="hidden" id="nameserver-type" value="default">
+
+    <div id="default-nameservers" class="border rounded-3 p-3 bg-light">
+        <div class="small text-muted mb-2">Vesselhost nameservers</div>
+        @php($defaultNameservers = config('services.resellerclub.nameservers', []))
+        @forelse($defaultNameservers as $index => $nameserver)
+            <div class="small mb-1">
+                <span class="fw-semibold">Nameserver {{ $index + 1 }}:</span>
+                {{ $nameserver }}
+            </div>
+        @empty
+            <div class="small text-danger">Vesselhost nameservers are not configured.</div>
+        @endforelse
+    </div>
+
+    <div id="custom-nameservers" class="d-none">
+        <div class="row g-3">
+            @for($i = 1; $i <= 4; $i++)
+                <div class="col-md-6">
+                    <label class="form-label small fw-semibold" for="nameserver-{{ $i }}">
+                        Nameserver {{ $i }} @if($i > 2)<span class="text-muted fw-normal">(Optional)</span>@endif
+                    </label>
+                    <input
+                        type="text"
+                        id="nameserver-{{ $i }}"
+                        class="form-control custom-nameserver"
+                        placeholder="ns{{ $i }}.example.com"
+                        autocomplete="off"
+                    >
+                </div>
+            @endfor
+        </div>
+        <div class="small text-muted mt-2">Nameserver 1 and Nameserver 2 are required.</div>
+    </div>
+</div>
 </div>
 </div>
 
@@ -80,9 +133,32 @@ document.addEventListener('DOMContentLoaded', function () {
     const searchButton = document.getElementById('domain-search-btn');
     let available = false;
 
+    const nameserverConfig = document.getElementById('nameserver-config');
+    const nameserverType = document.getElementById('nameserver-type');
+    const customNameservers = document.getElementById('custom-nameservers');
+    const defaultNameservers = document.getElementById('default-nameservers');
+
+    function updateNameserverTab(type) {
+        if (!nameserverType) return;
+        nameserverType.value = type;
+        document.querySelectorAll('.nameserver-tab').forEach(function (tab) {
+            tab.classList.toggle('active', tab.dataset.nameserverType === type);
+        });
+        if (defaultNameservers) defaultNameservers.classList.toggle('d-none', type !== 'default');
+        if (customNameservers) customNameservers.classList.toggle('d-none', type !== 'custom');
+        updateButton();
+    }
+
+    document.querySelectorAll('.nameserver-tab').forEach(function (tab) {
+        tab.addEventListener('click', function () {
+            updateNameserverTab(tab.dataset.nameserverType);
+        });
+    });
+
     document.querySelectorAll('input[name="domain_option"]').forEach(function (radio) {
         radio.addEventListener('change', function () {
             if (config) config.classList.remove('d-none');
+            if (nameserverConfig) nameserverConfig.classList.remove('d-none');
             available = false;
             if (status) status.textContent = '';
             if (addButton) addButton.disabled = !document.querySelector('.billing_cycle:checked');
@@ -105,6 +181,12 @@ document.addEventListener('DOMContentLoaded', function () {
 
         if (option === 'register') {
             enabled = enabled && available;
+        }
+
+        if (enabled && nameserverType?.value === 'custom') {
+            const custom = Array.from(document.querySelectorAll('.custom-nameserver'))
+                .map(function (field) { return field.value.trim(); });
+            enabled = !!custom[0] && !!custom[1];
         }
 
         if (addButton) addButton.disabled = !enabled;
@@ -234,6 +316,10 @@ document.addEventListener('DOMContentLoaded', function () {
             available = false;
             updateButton();
         });
+
+        document.querySelectorAll('.custom-nameserver').forEach(function (field) {
+            field.addEventListener('input', updateButton);
+        });
     }
 
     if (addButton) {
@@ -242,6 +328,12 @@ document.addEventListener('DOMContentLoaded', function () {
             const domain = (input?.value || '').trim();
             const billing = document.querySelector('.billing_cycle:checked')?.value;
             const planId = document.querySelector('.plan')?.dataset.planId;
+            const nsType = nameserverType?.value || 'default';
+            const nameservers = nsType === 'custom'
+                ? Array.from(document.querySelectorAll('.custom-nameserver')).map(function (field) {
+                    return field.value.trim();
+                }).filter(Boolean)
+                : [];
 
             if (!option || !domain || !billing || !planId) {
                 if (status) status.innerHTML = '<span class="text-danger">Please select a billing cycle and domain option.</span>';
@@ -263,7 +355,9 @@ document.addEventListener('DOMContentLoaded', function () {
                         plan_id: planId,
                         billing_cycle: billing,
                         domain: domain,
-                        domain_option: option
+                        domain_option: option,
+                        nameserver_type: nsType,
+                        nameservers: nameservers
                     })
                 });
 
