@@ -109,7 +109,9 @@ class ResellerClubService
                         ? 'ResellerClub API error: ' . (string) $providerMessage
                         : 'ResellerClub rejected the API request. Check the reseller ID, API key and server IP whitelist.',
                     'domain' => $domain,
+                    'provider_http_status' => $response->status(),
                     'provider_status' => $data['status'],
+                    'provider_response' => $data,
                 ];
             }
 
@@ -190,6 +192,7 @@ class ResellerClubService
                 'success' => false,
                 'message' => 'Unable to connect to ResellerClub. Please try again shortly.',
                 'domain' => $domain,
+                'provider_error' => $e->getMessage(),
             ];
         }
     }
