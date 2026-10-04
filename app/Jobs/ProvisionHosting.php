@@ -58,7 +58,11 @@ class ProvisionHosting implements ShouldQueue
                 $option = $meta['domain_option'] ?? 'register';
                 if ($option === 'register') {
                     if ($domain->status !== 'active') {
-                        $domainService->register($domain, max(1, (int) ($meta['years'] ?? 1)));
+                        $domainService->register(
+                            $domain,
+                            max(1, (int) ($meta['years'] ?? 1)),
+                            ($meta['nameserver_type'] ?? 'default') === 'custom' ? ($meta['nameservers'] ?? []) : null
+                        );
                     }
                 } elseif ($option === 'transfer') {
                     $requiresTransfer = true;
