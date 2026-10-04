@@ -30,6 +30,9 @@ return [
         'legacy_url' => env('RESELLERCLUB_LEGACY_API_URL', 'https://domaincheck.httpapi.com/api'),
         'dns_url' => env('RESELLERCLUB_DNS_API_URL', 'https://httpapi.com/api'),
         'dns_ttl' => env('RESELLERCLUB_DNS_TTL', 14400),
+        'customer_id' => env('RESELLERCLUB_CUSTOMER_ID'),
+        'contact_id' => env('RESELLERCLUB_CONTACT_ID'),
+        'nameservers' => array_values(array_filter(array_map('trim', explode(',', env('RESELLERCLUB_NAMESERVERS', ''))))),
     ],
 
     'paystack' => [
