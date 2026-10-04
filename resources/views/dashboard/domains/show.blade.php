@@ -172,14 +172,69 @@
         </div>
     </div>
 
-    <div class="col-12 col-lg-4">
+    <div class="col-12">
         <div class="table-card p-4">
-            <h5 class="fw-bold">Nameservers</h5>
-            <p class="small text-secondary">
-                DNS records only resolve when the domain is delegated to the DNS nameservers serving this zone.
-            </p>
-            <div class="p-3 rounded-3 bg-light small mb-2">{{ $domain->nameserver_1 ?: 'Pending' }}</div>
-            <div class="p-3 rounded-3 bg-light small">{{ $domain->nameserver_2 ?: 'Pending' }}</div>
+            <div class="d-flex justify-content-between align-items-start gap-3 mb-3">
+                <div>
+                    <h5 class="fw-bold mb-1">Nameservers</h5>
+                    <p class="small text-secondary mb-0">Choose Vesselhost's nameservers or provide custom nameservers for this domain.</p>
+                </div>
+            </div>
+
+            @php
+                $defaultNameservers = array_values(array_filter(config('services.resellerclub.nameservers', [])));
+                $currentNameservers = array_values(array_filter([
+                    $domain->nameserver_1,
+                    $domain->nameserver_2,
+                    $domain->nameserver_3,
+                    $domain->nameserver_4,
+                ]));
+                $isDefaultNameserverSet = count($defaultNameservers) >= 2
+                    && array_slice($currentNameservers, 0, count($defaultNameservers)) === array_slice($defaultNameservers, 0, count($defaultNameservers));
+            @endphp
+
+            <form method="POST" action="{{ route('dashboard.domains.nameservers', $domain) }}">
+                @csrf
+                <ul class="nav nav-tabs mb-4" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button type="button" class="nav-link {{ $isDefaultNameserverSet ? 'active' : '' }}" data-ns-tab="default">Default</button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button type="button" class="nav-link {{ !$isDefaultNameserverSet ? 'active' : '' }}" data-ns-tab="custom">Custom</button>
+                    </li>
+                </ul>
+
+                <input type="hidden" name="nameserver_type" id="nameserverType" value="{{ $isDefaultNameserverSet ? 'default' : 'custom' }}">
+
+                <div id="defaultNameservers" class="{{ $isDefaultNameserverSet ? '' : 'd-none' }}">
+                    <div class="border rounded-3 p-3 bg-light">
+                        <div class="small text-muted mb-2">Vesselhost nameservers</div>
+                        @forelse($defaultNameservers as $index => $nameserver)
+                            <div class="small mb-1"><span class="fw-semibold">Nameserver {{ $index + 1 }}:</span> {{ $nameserver }}</div>
+                        @empty
+                            <div class="small text-danger">Vesselhost nameservers are not configured.</div>
+                        @endforelse
+                    </div>
+                </div>
+
+                <div id="customNameservers" class="{{ !$isDefaultNameserverSet ? '' : 'd-none' }}">
+                    <div class="row g-3">
+                        @for($i = 1; $i <= 4; $i++)
+                            <div class="col-12 col-md-6">
+                                <label class="form-label fw-semibold">Nameserver {{ $i }} @if($i > 2)<span class="text-muted fw-normal">(Optional)</span>@endif</label>
+                                <input type="text" name="nameservers[]" class="form-control" value="{{ $currentNameservers[$i - 1] ?? '' }}" placeholder="ns{{ $i }}.example.com" @required($i <= 2 && !$isDefaultNameserverSet)>
+                            </div>
+                        @endfor
+                    </div>
+                    <div class="small text-secondary mt-2">Nameserver 1 and Nameserver 2 are required.</div>
+                </div>
+
+                @error('nameservers')<div class="text-danger small mt-2">{{ $message }}</div>@enderror
+
+                <button class="btn btn-vh mt-4">
+                    <i class="bi bi-check-lg me-1"></i> Save Nameservers
+                </button>
+            </form>
         </div>
     </div>
 
@@ -221,6 +276,22 @@
 </div>
 
 @push('scripts')
+<script>
+(function () {
+    const type = document.getElementById('nameserverType');
+    const defaultBox = document.getElementById('defaultNameservers');
+    const customBox = document.getElementById('customNameservers');
+    document.querySelectorAll('[data-ns-tab]').forEach(function (tab) {
+        tab.addEventListener('click', function () {
+            const mode = tab.dataset.nsTab;
+            type.value = mode;
+            document.querySelectorAll('[data-ns-tab]').forEach(function (item) { item.classList.toggle('active', item === tab); });
+            defaultBox.classList.toggle('d-none', mode !== 'default');
+            customBox.classList.toggle('d-none', mode !== 'custom');
+        });
+    });
+})();
+</script>
 <script>
 (function () {
     const type = document.getElementById('dnsType');
