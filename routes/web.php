@@ -39,6 +39,7 @@ Route::get('/dashboard/products/index', [PlanController::class, 'index'])->name(
 Route::get('/dashboard/products/single-product/{id}', [PlanController::class, 'single_prod'])->name('dashboard.single-product');
 Route::get('/cart', [CartController::class, 'index'])->name('cart.index');
 Route::post('/cart/add', [CartController::class, 'add'])->name('cart.add');
+Route::post('/cart/domain', [CartController::class, 'addDomain'])->name('cart.domain');
 Route::delete('/cart/{key}', [CartController::class, 'remove'])->name('cart.remove');
 
 
