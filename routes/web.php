@@ -54,6 +54,7 @@ Route::middleware('auth')->prefix('dashboard')->name('dashboard.')->group(functi
     Route::get('/domains',[DomainController::class,'index'])->name('domains');
     Route::get('/domains/{domain}',[DomainController::class,'show'])->name('domains.show');
     Route::post('/domains/{domain}/renew',[DomainController::class,'renew'])->name('domains.renew');
+    Route::post('/domains/{domain}/nameservers',[DomainController::class,'updateNameservers'])->name('domains.nameservers');
     Route::post('/domains/{domain}/dns',[DnsRecordController::class,'store'])->name('dns.store');
     Route::delete('/domains/{domain}/dns/{record}',[DnsRecordController::class,'destroy'])->name('dns.destroy');
 
