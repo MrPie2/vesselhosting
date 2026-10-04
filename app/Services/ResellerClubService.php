@@ -80,8 +80,10 @@ class ResellerClubService
 
                 return [
                     'success' => false,
-                    'message' => 'ResellerClub availability check failed. Please verify your API credentials and IP whitelist.',
+                    'message' => 'ResellerClub rejected the availability request. See the provider response below.',
                     'domain' => $domain,
+                    'provider_http_status' => $response->status(),
+                    'provider_response' => $body !== '' ? $body : null,
                 ];
             }
 
