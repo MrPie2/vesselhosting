@@ -9,7 +9,7 @@ use Throwable;
 
 class ResellerClubDomainService
 {
-    public function register(Domain $domain, int $years = 1, ?array $customNameservers = null): array
+    public function register(Domain $domain, int $years = 1): array
     {
         $userId = (string) config('services.resellerclub.user_id');
         $apiKey = (string) config('services.resellerclub.api_key');
@@ -21,9 +21,7 @@ class ResellerClubDomainService
             throw new RuntimeException('ResellerClub domain registration is not configured. Set RESELLERCLUB_CUSTOMER_ID and RESELLERCLUB_CONTACT_ID.');
         }
 
-        $nameservers = $customNameservers !== null
-            ? array_values(array_filter(array_map('trim', $customNameservers), fn ($ns) => is_string($ns) && $ns !== ''))
-            : config('services.resellerclub.nameservers', []);
+        $nameservers = config('services.resellerclub.nameservers', []);
         $nameservers = is_array($nameservers)
             ? array_values(array_filter($nameservers, fn ($ns) => is_string($ns) && trim($ns) !== ''))
             : [];
@@ -69,6 +67,11 @@ class ResellerClubDomainService
             $domain->forceFill([
                 'status' => 'active',
                 'expiry_date' => now()->addYears(max(1, $years)),
+                'reseller_order_id' => $data['entityid'] ?? $data['order-id'] ?? null,
+                'nameserver_1' => $nameservers[0] ?? null,
+                'nameserver_2' => $nameservers[1] ?? null,
+                'nameserver_3' => $nameservers[2] ?? null,
+                'nameserver_4' => $nameservers[3] ?? null,
             ])->save();
 
             return ['success' => true, 'response' => $data, 'nameservers' => $nameservers];
