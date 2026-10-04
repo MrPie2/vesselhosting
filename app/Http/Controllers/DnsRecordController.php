@@ -86,12 +86,14 @@ class DnsRecordController
             403
         );
 
-        try {
-            $dns->deleteRecord($domain, $record);
-        } catch (\Throwable $e) {
-            return back()->withErrors([
-                'dns' => 'ResellerClub rejected the DNS record deletion: ' . $e->getMessage(),
-            ]);
+        if ($record->provider_status === 'synced') {
+            try {
+                $dns->deleteRecord($domain, $record);
+            } catch (\Throwable $e) {
+                return back()->withErrors([
+                    'dns' => 'ResellerClub rejected the DNS record deletion: ' . $e->getMessage(),
+                ]);
+            }
         }
 
         $record->delete();
