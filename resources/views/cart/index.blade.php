@@ -31,6 +31,14 @@
                                     <div class="text-muted small mt-1">
                                         {{ $item['billing_cycle'] }} month billing period
                                     </div>
+                                    <div class="small mt-2">
+                                        Hosting: {{ config('services.paystack.currency', 'USD') }} {{ number_format($item['hosting_total'] ?? $item['total'], 2) }}
+                                    </div>
+                                    @if(($item['domain_price'] ?? 0) > 0)
+                                        <div class="small text-muted">
+                                            Domain registration: {{ config('services.paystack.currency', 'USD') }} {{ number_format($item['domain_price'], 2) }} / year
+                                        </div>
+                                    @endif
                                 </div>
                                 <div class="text-end">
                                     <strong>{{ config('services.paystack.currency', 'USD') }} {{ number_format($item['total'], 2) }}</strong>
