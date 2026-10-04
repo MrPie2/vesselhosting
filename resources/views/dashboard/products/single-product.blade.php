@@ -75,18 +75,6 @@
 document.addEventListener('DOMContentLoaded', function () {
     const config = document.getElementById('domain-config');
     const input = document.getElementById('domain-input');
-
-    document.querySelectorAll('input[name="domain_option"]').forEach(function (radio) {
-        radio.addEventListener('change', function () {
-            if (config) config.classList.remove('d-none');
-            if (input) input.focus();
-        });
-    });
-});
-<script>
-document.addEventListener('DOMContentLoaded', function () {
-    const config = document.getElementById('domain-config');
-    const input = document.getElementById('domain-input');
     const addButton = document.querySelector('.add_to_cart');
     const status = document.getElementById('domain-status');
     const searchButton = document.getElementById('domain-search-btn');
