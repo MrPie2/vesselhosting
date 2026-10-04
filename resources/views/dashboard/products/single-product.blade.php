@@ -136,18 +136,33 @@ document.addEventListener('DOMContentLoaded', function () {
             } else {
                 available = false;
                 let message = data.message || 'Domain is not available.';
-                if (data.provider_http_status) {
-                    message += '<br><strong>HTTP Status:</strong> ' + data.provider_http_status;
+                let diagnostics = '';
+                if (data.provider_http_status !== undefined) {
+                    diagnostics += '<div><strong>HTTP Status:</strong> ' + String(data.provider_http_status) + '</div>';
                 }
-                if (data.provider_response) {
+                if (data.provider_status !== undefined) {
+                    diagnostics += '<div><strong>Provider Status:</strong> ' + String(data.provider_status) + '</div>';
+                }
+                if (data.provider_response !== undefined && data.provider_response !== null) {
                     let provider = typeof data.provider_response === 'object'
                         ? JSON.stringify(data.provider_response, null, 2)
                         : String(data.provider_response);
-                    message += '<div class="mt-2"><strong>ResellerClub response:</strong><pre class="small bg-light border rounded p-2 mt-1 mb-0" style="white-space:pre-wrap;word-break:break-word;">' +
+                    diagnostics += '<div class="mt-2"><strong>Provider Response:</strong><pre class="small bg-light border rounded p-2 mt-1 mb-0" style="white-space:pre-wrap;word-break:break-word;">' +
                         provider.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;') +
                         '</pre></div>';
                 }
-                if (status) status.innerHTML = '<span class="text-danger">' + message + '</span>';
+                if (data.provider_error) {
+                    diagnostics += '<div class="mt-2"><strong>Connection Error:</strong><pre class="small bg-light border rounded p-2 mt-1 mb-0" style="white-space:pre-wrap;word-break:break-word;">' +
+                        String(data.provider_error).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;') +
+                        '</pre></div>';
+                }
+                if (!diagnostics) {
+                    diagnostics = '<div class="mt-2">No provider diagnostics were returned. This usually means the deployed server is running an older application version or the response was intercepted before reaching the updated code.</div>';
+                }
+                if (status) {
+                    status.innerHTML = '<div class="text-danger">' + message + '</div>' +
+                        '<div class="mt-3 p-3 border rounded bg-light text-dark"><div class="fw-semibold mb-2">ResellerClub Diagnostics</div>' + diagnostics + '</div>';
+                }
             }
         } catch (error) {
             available = false;
