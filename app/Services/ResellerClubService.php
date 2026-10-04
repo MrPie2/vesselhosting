@@ -80,10 +80,10 @@ class ResellerClubService
 
                 return [
                     'success' => false,
-                    'message' => 'ResellerClub rejected the availability request. See the provider response below.',
+                    'message' => $this->providerErrorMessage($response->status(), $body),
                     'domain' => $domain,
                     'provider_http_status' => $response->status(),
-                    'provider_response' => $body !== '' ? $body : null,
+                    'provider_response' => $this->safeProviderResponse($body),
                 ];
             }
 
@@ -195,6 +195,48 @@ class ResellerClubService
                 'provider_error' => $e->getMessage(),
             ];
         }
+    }
+
+    private function providerErrorMessage(int $httpStatus, string $body): string
+    {
+        $decoded = json_decode($body, true);
+
+        if (is_array($decoded)) {
+            $providerMessage = $decoded['message']
+                ?? $decoded['error']
+                ?? $decoded['description']
+                ?? null;
+
+            if (is_string($providerMessage) && trim($providerMessage) !== '') {
+                return 'ResellerClub API error: ' . trim($providerMessage);
+            }
+        }
+
+        if ($body !== '') {
+            return 'ResellerClub API error (HTTP ' . $httpStatus . '): ' . $this->truncateProviderBody($body);
+        }
+
+        return 'ResellerClub rejected the availability request (HTTP ' . $httpStatus . ').';
+    }
+
+    private function safeProviderResponse(string $body): mixed
+    {
+        $decoded = json_decode($body, true);
+
+        if (json_last_error() === JSON_ERROR_NONE && $decoded !== null) {
+            return $decoded;
+        }
+
+        return $body !== '' ? $this->truncateProviderBody($body) : null;
+    }
+
+    private function truncateProviderBody(string $body, int $limit = 2000): string
+    {
+        $body = trim($body);
+
+        return strlen($body) > $limit
+            ? substr($body, 0, $limit) . '…'
+            : $body;
     }
 
     public function suggestions(string $domain, int $limit = 10): array
