@@ -16,8 +16,14 @@ class CartController
         $total = 0;
 
         foreach ($cart as $key => &$item) {
-            $plan = Plan::find($item['plan_id']);
+            if (($item['type'] ?? 'hosting') === 'domain') {
+                $item['domain_price'] = (float) ($item['domain_price'] ?? 0);
+                $item['total'] = $item['domain_price'];
+                $total += $item['total'];
+                continue;
+            }
 
+            $plan = Plan::find($item['plan_id']);
             if (!$plan) {
                 unset($cart[$key]);
                 continue;
