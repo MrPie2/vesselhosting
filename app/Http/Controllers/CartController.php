@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\DomainPrice;
 use App\Models\Plan;
 use App\Services\ResellerClubService;
 use Illuminate\Http\Request;
@@ -25,7 +26,10 @@ class CartController
             $months = (int) ($item['billing_cycle'] ?? 1);
             $item['plan_name'] = $plan->name;
             $item['unit_price'] = (float) $plan->amount;
-            $item['total'] = round((float) $plan->amount * $months, 2);
+            $hostingTotal = round((float) $plan->amount * $months, 2);
+            $item['hosting_total'] = $hostingTotal;
+            $item['domain_price'] = (float) ($item['domain_price'] ?? 0);
+            $item['total'] = round($hostingTotal + $item['domain_price'], 2);
             $total += $item['total'];
         }
         unset($item);
@@ -76,6 +80,31 @@ class CartController
         $plan = Plan::findOrFail($data['plan_id']);
         $months = (int) $data['billing_cycle'];
         $unitPrice = (float) $plan->amount;
+        $domainPrice = 0;
+
+        if ($data['domain_option'] === 'register') {
+            $firstDot = strpos($domain, '.');
+            $tld = $firstDot !== false
+                ? '.' . strtolower(ltrim(substr($domain, $firstDot + 1), '.'))
+                : '';
+
+            $pricing = DomainPrice::where('tld', $tld)->where('active', true)->first();
+
+            if (!$pricing) {
+                return response()->json([
+                    'message' => 'We have not configured a registration price for ' . $tld . ' yet. Please choose another extension.',
+                ], 422);
+            }
+
+            $domainPrice = (float) $pricing->registration_price;
+        } elseif ($data['domain_option'] === 'transfer') {
+            $firstDot = strpos($domain, '.');
+            $tld = $firstDot !== false
+                ? '.' . strtolower(ltrim(substr($domain, $firstDot + 1), '.'))
+                : '';
+            $pricing = DomainPrice::where('tld', $tld)->where('active', true)->first();
+            $domainPrice = $pricing ? (float) $pricing->transfer_price : 0;
+        }
         $key = (string) Str::uuid();
 
         $cart = $request->session()->get('cart', []);
@@ -87,7 +116,9 @@ class CartController
             'domain_option' => $data['domain_option'],
             'billing_cycle' => $months,
             'unit_price' => $unitPrice,
-            'total' => round($unitPrice * $months, 2),
+            'hosting_total' => round($unitPrice * $months, 2),
+            'domain_price' => $domainPrice,
+            'total' => round(($unitPrice * $months) + $domainPrice, 2),
         ];
 
         $request->session()->put('cart', $cart);
