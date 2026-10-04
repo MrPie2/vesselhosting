@@ -195,12 +195,12 @@
 
             <form method="POST" action="{{ route('dashboard.domains.nameservers', $domain) }}">
                 @csrf
-                <ul class="nav nav-tabs mb-4" role="tablist">
-                    <li class="nav-item" role="presentation">
-                        <button type="button" class="nav-link {{ $isDefaultNameserverSet ? 'active' : '' }}" data-ns-tab="default">Default</button>
+                <ul class="nav ns-tab-list mb-4" role="tablist">
+                    <li class="nav-item {{ $isDefaultNameserverSet ? 'active' : '' }}" role="presentation">
+                        <button type="button" class="nav-link" data-ns-tab="default" aria-selected="{{ $isDefaultNameserverSet ? 'true' : 'false' }}">Default</button>
                     </li>
-                    <li class="nav-item" role="presentation">
-                        <button type="button" class="nav-link {{ !$isDefaultNameserverSet ? 'active' : '' }}" data-ns-tab="custom">Custom</button>
+                    <li class="nav-item {{ !$isDefaultNameserverSet ? 'active' : '' }}" role="presentation">
+                        <button type="button" class="nav-link" data-ns-tab="custom" aria-selected="{{ !$isDefaultNameserverSet ? 'true' : 'false' }}">Custom</button>
                     </li>
                 </ul>
 
@@ -275,22 +275,63 @@
     </div>
 </div>
 
+<style>
+    .ns-tab-list {
+        gap: .5rem;
+        border-bottom: 0;
+    }
+
+    .ns-tab-list .nav-item {
+        border-radius: 12px;
+    }
+
+    .ns-tab-list .nav-link {
+        border: 0;
+        border-radius: 12px;
+        color: var(--vh-purple);
+        background: #f1eafd;
+        font-weight: 700;
+        padding: .7rem 1.15rem;
+    }
+
+    .ns-tab-list .nav-item.active .nav-link {
+        background: linear-gradient(135deg, var(--vh-purple), var(--vh-purple-2));
+        color: #fff;
+    }
+
+    .ns-tab-list .nav-link:hover {
+        color: #fff;
+        background: linear-gradient(135deg, var(--vh-purple), var(--vh-purple-2));
+    }
+</style>
+
 @push('scripts')
 <script>
-(function () {
+document.addEventListener('DOMContentLoaded', function () {
     const type = document.getElementById('nameserverType');
     const defaultBox = document.getElementById('defaultNameservers');
     const customBox = document.getElementById('customNameservers');
-    document.querySelectorAll('[data-ns-tab]').forEach(function (tab) {
+    const tabs = document.querySelectorAll('[data-ns-tab]');
+
+    if (!type || !defaultBox || !customBox || !tabs.length) return;
+
+    tabs.forEach(function (tab) {
         tab.addEventListener('click', function () {
             const mode = tab.dataset.nsTab;
+
             type.value = mode;
-            document.querySelectorAll('[data-ns-tab]').forEach(function (item) { item.classList.toggle('active', item === tab); });
+
+            tabs.forEach(function (item) {
+                const itemIsActive = item === tab;
+                item.closest('.nav-item')?.classList.toggle('active', itemIsActive);
+                item.setAttribute('aria-selected', itemIsActive ? 'true' : 'false');
+            });
+
             defaultBox.classList.toggle('d-none', mode !== 'default');
             customBox.classList.toggle('d-none', mode !== 'custom');
         });
     });
-})();
+});
 </script>
 <script>
 (function () {
