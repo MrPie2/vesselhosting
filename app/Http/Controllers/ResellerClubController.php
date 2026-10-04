@@ -22,7 +22,7 @@ class ResellerClubController
 
         $suggestions = collect($suggestions)
             ->map(function (string $name) {
-                $tld = '.' . ltrim(strtolower(substr($name, strrpos($name, '.') + 1)), '.');
+                $tld = '.' . strtolower(ltrim(substr($name, strpos($name, '.') + 1), '.'));
                 $price = DomainPrice::where('tld', $tld)->where('active', true)->first();
 
                 if (!$price) {
