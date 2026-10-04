@@ -15,7 +15,7 @@ class ResellerClubDomainService
         $apiKey = (string) config('services.resellerclub.api_key');
         $customerId = (string) config('services.resellerclub.customer_id');
         $contactId = (string) config('services.resellerclub.contact_id');
-        $url = rtrim((string) config('services.resellerclub.url', 'https://httpapi.com/api'), '/');
+        $url = rtrim((string) (config('services.resellerclub.url') ?: 'https://httpapi.com/api'), '/');
 
         if ($userId === '' || $apiKey === '' || $customerId === '' || $contactId === '') {
             throw new RuntimeException('ResellerClub domain registration is not configured. Set RESELLERCLUB_CUSTOMER_ID and RESELLERCLUB_CONTACT_ID.');
@@ -26,13 +26,10 @@ class ResellerClubDomainService
             ? array_values(array_filter($nameservers, fn ($ns) => is_string($ns) && trim($ns) !== ''))
             : [];
 
-        [$sld, $tld] = $this->splitDomain($domain->domain);
-
         $query = [
             'auth-userid' => $userId,
             'api-key' => $apiKey,
-            'domain-name' => $sld,
-            'tlds' => $tld,
+            'domain-name' => strtolower(trim($domain->domain)),
             'customer-id' => $customerId,
             'reg-contact-id' => $contactId,
             'admin-contact-id' => $contactId,
@@ -42,12 +39,17 @@ class ResellerClubDomainService
             'years' => max(1, $years),
         ];
 
-        foreach ($nameservers as $index => $nameserver) {
-            $query['ns' . ($index + 1)] = trim($nameserver);
+        if (empty($nameservers)) {
+            throw new RuntimeException('No nameservers are configured for domain registration. Set RESELLERCLUB_NAMESERVERS.');
+        }
+
+        $queryString = http_build_query($query);
+        foreach ($nameservers as $nameserver) {
+            $queryString .= '&ns=' . rawurlencode(trim($nameserver));
         }
 
         try {
-            $response = Http::timeout(30)->acceptJson()->get($url . '/domains/register.json', $query);
+            $response = Http::timeout(30)->acceptJson()->post($url . '/domains/register.json?' . $queryString);
             $data = $response->json();
 
             if ($response->failed()) {
@@ -74,13 +76,6 @@ class ResellerClubDomainService
                 ? $e
                 : new RuntimeException('Unable to register domain with ResellerClub: ' . $e->getMessage(), 0, $e);
         }
-    }
-
-    private function splitDomain(string $domain): array
-    {
-        $parts = explode('.', strtolower(trim($domain)));
-        if (count($parts) < 2) throw new RuntimeException('Invalid domain name.');
-        return [array_shift($parts), implode('.', $parts)];
     }
 
     private function providerMessage(int $status, string $body): string
