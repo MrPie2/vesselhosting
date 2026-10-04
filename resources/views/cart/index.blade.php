@@ -4,8 +4,8 @@
 <div class="container py-4">
     <div class="mb-4">
         <span class="badge bg-light text-dark mb-2">Shopping Cart</span>
-        <h3 class="fw-bold mb-1">Your hosting cart</h3>
-        <p class="text-muted mb-0">Review your selections before checkout.</p>
+        <h3 class="fw-bold mb-1">Your cart</h3>
+        <p class="text-muted mb-0">Review your domains and hosting before checkout.</p>
     </div>
 
     @if(empty($cart))
@@ -20,24 +20,22 @@
         <div class="row g-4">
             <div class="col-lg-8">
                 @foreach($cart as $item)
+                    @php $isDomainOnly = ($item['type'] ?? 'hosting') === 'domain'; @endphp
                     <div class="card border-0 shadow-sm mb-3">
                         <div class="card-body p-4">
                             <div class="d-flex justify-content-between gap-3">
                                 <div>
-                                    <h5 class="fw-bold mb-1">{{ $item['plan_name'] }}</h5>
+                                    <span class="badge bg-light text-dark mb-2">{{ $isDomainOnly ? 'Domain' : 'Hosting' }}</span>
+                                    <h5 class="fw-bold mb-1">{{ $isDomainOnly ? $item['domain'] : $item['plan_name'] }}</h5>
                                     <div class="text-muted small">
-                                        {{ ucfirst($item['domain_option']) }} domain · {{ $item['domain'] }}
+                                        {{ $isDomainOnly ? 'Domain registration · 1 year' : ucfirst($item['domain_option']) . ' domain · ' . $item['domain'] }}
                                     </div>
-                                    <div class="text-muted small mt-1">
-                                        {{ $item['billing_cycle'] }} month billing period
-                                    </div>
-                                    <div class="small mt-2">
-                                        Hosting: {{ config('services.paystack.currency', 'USD') }} {{ number_format($item['hosting_total'] ?? $item['total'], 2) }}
-                                    </div>
+                                    @if(!$isDomainOnly)
+                                        <div class="text-muted small mt-1">{{ $item['billing_cycle'] }} month billing period</div>
+                                        <div class="small mt-2">Hosting: {{ config('services.paystack.currency', 'USD') }} {{ number_format($item['hosting_total'] ?? 0, 2) }}</div>
+                                    @endif
                                     @if(($item['domain_price'] ?? 0) > 0)
-                                        <div class="small text-muted">
-                                            Domain registration: {{ config('services.paystack.currency', 'USD') }} {{ number_format($item['domain_price'], 2) }} / year
-                                        </div>
+                                        <div class="small text-muted">Domain registration: {{ config('services.paystack.currency', 'USD') }} {{ number_format($item['domain_price'], 2) }} / year</div>
                                     @endif
                                 </div>
                                 <div class="text-end">
