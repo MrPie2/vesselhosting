@@ -1,5 +1,5 @@
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIlVfY4p0f..." crossorigin="anonymous">
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYjRz..." crossorigin="anonymous"></script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.3.1/css/all.css" integrity="sha512-x9WwyMYBnlXMNQ6kQ/Lyzu1NqIhLQKL5Oq6xByfXuRj7s9CskyCbLv/1IjqzJmXwFXWr0ov6jBV7Qbc0hh9nHg==" crossorigin="anonymous" referrerpolicy="no-referrer">
 @extends('layouts.public')
 @section('content')
@@ -72,6 +72,75 @@
 @endauth
       </div></div>
       @endforeach
+    </div>
+  </div>
+</section>
+
+<section id="ai-deploy" class="section-pad ai-deploy-section">
+  <div class="container">
+    <div class="ai-deploy-card">
+      <div class="row align-items-stretch g-0">
+        <div class="col-lg-5">
+          <div class="ai-deploy-visual">
+            <div class="ai-server-bg"></div>
+            <img src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=1000&q=85" alt="Happy developer" class="ai-person">
+            <div class="ai-shirt-brand"><i class="bi bi-wifi"></i><span>VesselHost</span></div>
+            <div class="ai-visual-badge"><i class="bi bi-stars"></i> Developer ready</div>
+          </div>
+        </div>
+        <div class="col-lg-7">
+          <div class="ai-deploy-copy">
+            <div class="small text-vh fw-bold letter-spaced">AI-POWERED HOSTING</div>
+            <h2 class="display-5 fw-bold mt-2 mb-3">Build with AI<br><span>deploy with Vessel Host</span></h2>
+            <p class="text-secondary lead">Turn your ideas into live applications faster. Build with the AI tools you already love, then deploy your project on infrastructure designed for developers.</p>
+            <div class="row g-3 mt-2">
+              <div class="col-sm-6"><div class="ai-feature"><i class="bi bi-lightning-charge-fill"></i><div><strong>Ship faster</strong><small>From code to production with less friction.</small></div></div></div>
+              <div class="col-sm-6"><div class="ai-feature"><i class="bi bi-cloud-check-fill"></i><div><strong>Reliable infrastructure</strong><small>Performance you can build your business on.</small></div></div></div>
+              <div class="col-sm-6"><div class="ai-feature"><i class="bi bi-shield-check"></i><div><strong>Full control</strong><small>Your code, your deployment, your rules.</small></div></div></div>
+              <div class="col-sm-6"><div class="ai-feature"><i class="bi bi-code-slash"></i><div><strong>Built for developers</strong><small>Simple workflows without unnecessary complexity.</small></div></div></div>
+            </div>
+            <a href="{{ route('register') }}" class="btn btn-vh mt-4 px-4">Get Started Free <i class="bi bi-arrow-right ms-2"></i></a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="platform-marquee-section" aria-label="Deployment platforms">
+  <div class="container">
+    <div class="platform-heading"><span></span><div class="small text-vh fw-bold letter-spaced">DEPLOY WITH YOUR FAVORITE PLATFORMS</div><span></span></div>
+    <div class="platform-marquee">
+      <div class="platform-track">
+        @foreach([
+          ['GitHub','github/github-original.svg'],
+          ['Docker','docker/docker-original.svg'],
+          ['Kubernetes','kubernetes/kubernetes-plain.svg'],
+          ['Jenkins','jenkins/jenkins-original.svg'],
+          ['GitLab','gitlab/gitlab-original.svg'],
+          ['Terraform','terraform/terraform-original.svg'],
+          ['AWS','amazonwebservices/amazonwebservices-original-wordmark.svg'],
+          ['DigitalOcean','digitalocean/digitalocean-original.svg'],
+          ['NGINX','nginx/nginx-original.svg'],
+          ['PostgreSQL','postgresql/postgresql-original.svg']
+        ] as $platform)
+        <div class="platform-item"><img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/{{ $platform[1] }}" alt="{{ $platform[0] }}"><span>{{ $platform[0] }}</span></div>
+        @endforeach
+        @foreach([
+          ['GitHub','github/github-original.svg'],
+          ['Docker','docker/docker-original.svg'],
+          ['Kubernetes','kubernetes/kubernetes-plain.svg'],
+          ['Jenkins','jenkins/jenkins-original.svg'],
+          ['GitLab','gitlab/gitlab-original.svg'],
+          ['Terraform','terraform/terraform-original.svg'],
+          ['AWS','amazonwebservices/amazonwebservices-original-wordmark.svg'],
+          ['DigitalOcean','digitalocean/digitalocean-original.svg'],
+          ['NGINX','nginx/nginx-original.svg'],
+          ['PostgreSQL','postgresql/postgresql-original.svg']
+        ] as $platform)
+        <div class="platform-item" aria-hidden="true"><img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/{{ $platform[1] }}" alt=""><span>{{ $platform[0] }}</span></div>
+        @endforeach
+      </div>
     </div>
   </div>
 </section>
