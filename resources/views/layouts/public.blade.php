@@ -33,12 +33,7 @@
   </div>
 </nav>
 @yield('content')
-<footer class="footer-vh py-5">
-  <div class="container d-flex justify-content-between flex-wrap gap-3">
-    <div><strong>Vessel Host</strong><div class="small opacity-75 mt-1">Fast, secure and reliable hosting.</div></div>
-    <div class="small opacity-75">© {{ date('Y') }} Vessel Host. All rights reserved.</div>
-  </div>
-</footer>
+@include('partials.footer')
 <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
 <script src="{{ asset('assets/js/app.js') }}"></script>
