@@ -14,10 +14,12 @@ use App\Http\Controllers\SearchController;
 use App\Http\Controllers\PlanController;
 use App\Http\Controllers\ResellerClubController;
 use App\Http\Controllers\CartController;
+use App\Http\Controllers\NewsletterController;
 
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', fn()=>view('landing'))->name('home');
+Route::post('/newsletter/subscribe', [NewsletterController::class, 'subscribe'])->name('newsletter.subscribe');
 Route::post('/domain-search',[DomainSearchController::class,'search'])->name('domain.search');
 Route::get('/domain-av',[ResellerClubController::class,'check'])->name('domain.av');
 Route::get('/domain-suggestions',[ResellerClubController::class,'suggestions'])->name('domain.suggestions');
