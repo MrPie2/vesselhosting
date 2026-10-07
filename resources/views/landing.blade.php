@@ -82,10 +82,7 @@
       <div class="row align-items-stretch g-0">
         <div class="col-lg-5">
           <div class="ai-deploy-visual">
-            <div class="ai-server-bg"></div>
-            <img src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=1000&q=85" alt="Happy developer" class="ai-person">
-            <div class="ai-shirt-brand"><i class="bi bi-wifi"></i><span>VesselHost</span></div>
-            <div class="ai-visual-badge"><i class="bi bi-stars"></i> Developer ready</div>
+            <img src="{{ asset('assets/images/ai-vesselhost-developer.svg') }}" alt="Happy developer wearing a VesselHost shirt in a server room" class="ai-deploy-art">
           </div>
         </div>
         <div class="col-lg-7">
